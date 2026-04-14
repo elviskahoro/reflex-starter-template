@@ -1,0 +1,8 @@
+[project]
+name = "reflex-starter-template"
+version = "0.1.0"
+description = "A Reflex starter template"
+requires-python = ">=3.11"
+dependencies = [
+    "reflex>=0.8.28",
+]

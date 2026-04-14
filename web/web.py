@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import reflex as rx
 
-from app.pages.index import page
+from web.pages.index import page
 
 app = rx.App()
 app.add_page(

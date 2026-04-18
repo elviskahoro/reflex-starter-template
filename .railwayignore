@@ -1,0 +1,17 @@
+.git
+.venv
+.claude
+.agents
+symlink
+.trunk
+.warp
+__pycache__
+*.pyc
+.pytest_cache
+node_modules
+web/.web
+web/.reflex
+.DS_Store
+.env
+.env.local
+*.log

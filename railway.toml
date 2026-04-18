@@ -1,9 +1,8 @@
 [build]
 builder = "dockerfile"
-watchPatterns = ["Dockerfile", "pyproject.toml", "web/**"]
+watchPatterns = ["Dockerfile", "pyproject.toml", "uv.lock", "web/**", "Caddyfile", "entrypoint.sh"]
 
 [deploy]
-startCommand = ".venv/bin/reflex run --env prod"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 5
 

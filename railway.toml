@@ -1,0 +1,7 @@
+[build]
+builder = "dockerfile"
+
+[deploy]
+startCommand = ".venv/bin/reflex run --env prod"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 5

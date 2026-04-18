@@ -89,3 +89,4 @@ wheels/
 *.db
 *.py[cod]
 *.zip
+uv.lock

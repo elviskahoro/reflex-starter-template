@@ -2,6 +2,8 @@ FROM python:3.11-alpine
 
 WORKDIR /app
 
+# Force rebuild - cache busting
+
 # Runtime + build tooling: bash/curl/unzip for reflex+bun; nodejs for Next.js build;
 # caddy serves the exported frontend; libstdc++/libgcc let bun run on musl Alpine.
 RUN apk add --no-cache bash curl unzip nodejs npm caddy libstdc++ libgcc

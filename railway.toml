@@ -9,9 +9,9 @@ restartPolicyMaxRetries = 5
 # Graceful shutdown: give old deploy 30s to close connections before force kill
 drainingSeconds = 30
 
-# Health check settings
-healthcheckPath = "/"
-healthcheckTimeout = 60
+# Health check disabled for debugging
+# healthcheckPath = "/"
+# healthcheckTimeout = 60
 
 [env]
 REFLEX_ENV = "prod"

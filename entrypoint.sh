@@ -7,6 +7,6 @@ BACKEND_PID=$!
 caddy run --config /app/Caddyfile --adapter caddyfile &
 CADDY_PID=$!
 
-wait -n
-kill -TERM "$BACKEND_PID" "$CADDY_PID" 2>/dev/null || true
+trap "kill -TERM $BACKEND_PID $CADDY_PID 2>/dev/null || true" SIGTERM SIGINT
+
 wait

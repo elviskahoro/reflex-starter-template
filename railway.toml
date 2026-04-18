@@ -5,3 +5,6 @@ builder = "dockerfile"
 startCommand = ".venv/bin/reflex run --env prod"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 5
+
+# Railway will auto-assign memory. For Reflex apps, recommend at least 1GB RAM.
+# If experiencing OOM errors, upgrade to a paid plan for more resources.

@@ -26,6 +26,7 @@ RUN .venv/bin/reflex init && \
 
 RUN chmod +x /app/entrypoint.sh
 
+# Health check disabled - app running without health monitoring
 ENV REFLEX_ENV=prod \
     PYTHONUNBUFFERED=1
 

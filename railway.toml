@@ -16,3 +16,4 @@ healthcheckTimeout = 30
 [env]
 REFLEX_ENV = "prod"
 PYTHONUNBUFFERED = "1"
+PORT = "8080"

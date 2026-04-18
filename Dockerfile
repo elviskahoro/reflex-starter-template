@@ -1,13 +1,17 @@
-FROM python:3.11-slim
+FROM python:3.11-alpine
 
 WORKDIR /app
+
+# Install build dependencies for Alpine (only needed during build)
+RUN apk add --no-cache --virtual .build-deps gcc musl-dev linux-headers
 
 # Copy dependency files
 COPY pyproject.toml ./
 
 # Install uv and dependencies (skip optional dependencies to reduce size)
 RUN pip install --no-cache-dir uv && \
-    uv sync --frozen --no-dev
+    uv sync --frozen --no-dev && \
+    apk del .build-deps
 
 # Copy application code
 COPY . .

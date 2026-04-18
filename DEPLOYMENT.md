@@ -50,10 +50,20 @@ Check Railway logs for details. Common issues:
 - Python version mismatch: Ensure Python 3.11+
 - Memory limits: Railway free tier has limited memory; may need to upgrade for large builds
 
+### Out of Memory (OOM) Errors
+Railway free tier has ~512MB RAM, which may be insufficient for building Reflex apps.
+
+**Solutions:**
+1. **Upgrade Railway plan** — Switch to a paid plan with 1GB+ RAM (recommended)
+2. **Use a lighter image** — The Dockerfile uses Python 3.11-slim and defers builds to runtime
+3. **Monitor usage** — Check Railway dashboard → Metrics to see actual memory usage
+
+The app should stabilize once deployed, as the initial build uses the most memory.
+
 ### App Not Starting
 - Check Railway logs for startup errors
 - Ensure environment variables are set if required
-- Verify Reflex build completes successfully
+- Verify Reflex build completes successfully (first startup may take 1-2 minutes)
 
 ## Local Testing
 

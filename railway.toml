@@ -11,7 +11,7 @@ drainingSeconds = 30
 
 # Health check settings
 healthcheckPath = "/"
-healthcheckTimeout = 30
+healthcheckTimeout = 60
 
 [env]
 REFLEX_ENV = "prod"

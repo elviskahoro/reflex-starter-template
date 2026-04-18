@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(mkdir -p /Users/elvis/Documents/elviskahoro/reflex-starter-template/.claude)",
-      "Bash(ln -s ../symlink/.agents/skills /Users/elvis/Documents/elviskahoro/reflex-starter-template/.claude/skills)"
-    ]
-  }
-}

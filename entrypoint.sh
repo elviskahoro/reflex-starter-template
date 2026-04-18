@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 .venv/bin/reflex run --env prod --backend-only --backend-port 8000 &
 BACKEND_PID=$!
@@ -9,4 +8,5 @@ CADDY_PID=$!
 
 trap "kill -TERM $BACKEND_PID $CADDY_PID 2>/dev/null || true" SIGTERM SIGINT
 
-wait
+wait $BACKEND_PID $CADDY_PID
+exit $?

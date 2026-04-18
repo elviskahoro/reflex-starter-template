@@ -1,10 +1,19 @@
 [build]
 builder = "dockerfile"
+watchPatterns = ["Dockerfile", "pyproject.toml", "web/**"]
 
 [deploy]
 startCommand = ".venv/bin/reflex run --env prod"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 5
 
-# Railway will auto-assign memory. For Reflex apps, recommend at least 1GB RAM.
-# If experiencing OOM errors, upgrade to a paid plan for more resources.
+# Graceful shutdown: give old deploy 30s to close connections before force kill
+drainingSeconds = 30
+
+# Health check settings
+healthcheckPath = "/"
+healthcheckTimeout = 30
+
+[env]
+REFLEX_ENV = "prod"
+PYTHONUNBUFFERED = "1"

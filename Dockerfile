@@ -2,26 +2,31 @@ FROM python:3.11-alpine
 
 WORKDIR /app
 
-# Install build dependencies for Alpine (only needed during build)
+# Runtime + build tooling: bash/curl/unzip for reflex+bun; nodejs for Next.js build;
+# caddy serves the exported frontend; libstdc++/libgcc let bun run on musl Alpine.
+RUN apk add --no-cache bash curl unzip nodejs npm caddy libstdc++ libgcc
+
+# Build deps for compiling Python wheels (removed after uv sync)
 RUN apk add --no-cache --virtual .build-deps gcc musl-dev linux-headers
 
-# Copy dependency files
-COPY pyproject.toml ./
-
-# Install uv and dependencies (skip optional dependencies to reduce size)
+COPY pyproject.toml uv.lock ./
 RUN pip install --no-cache-dir uv && \
     uv sync --frozen --no-dev && \
     apk del .build-deps
 
-# Copy application code
 COPY . .
 
-# Expose port (Railway uses PORT env var by default)
-EXPOSE 3000
+# Pre-build frontend at image build time so runtime only serves static assets.
+RUN .venv/bin/reflex init && \
+    .venv/bin/reflex export --frontend-only && \
+    mkdir -p /srv && \
+    unzip -q frontend.zip -d /srv && \
+    rm frontend.zip && \
+    rm -rf .web
 
-# Set environment variables for production
-ENV PORT=3000 \
-    REFLEX_ENV=prod
+RUN chmod +x /app/entrypoint.sh
 
-# Reflex will build on first startup in production mode
-CMD [".venv/bin/reflex", "run", "--env", "prod"]
+ENV REFLEX_ENV=prod \
+    PYTHONUNBUFFERED=1
+
+CMD ["/app/entrypoint.sh"]

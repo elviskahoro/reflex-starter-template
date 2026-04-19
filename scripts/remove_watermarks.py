@@ -17,51 +17,46 @@ def remove_reflex_watermarks():
 
     original_length = len(content)
 
-    # Remove "Built with Reflex" link - use regex to find and replace it
-    # Pattern: ), (jsx(ReactRouterLink, ({to:"https://reflex.dev"}, ... (jsx("title", ... "Reflex" ... ))))))))))),
-    # We'll use a non-greedy match to find the ReactRouterLink component
+    # Find and remove the ReactRouterLink component with https://reflex.dev
+    # Pattern: (jsx(ReactRouterLink, ({to:"https://reflex.dev"}), ... matching closing parens)
+    # The component spans from the jsx( to the closing )
 
-    # Simple approach: find "Built with" and remove the entire ReactRouterLink component
-    pattern = r'\), \(jsx\(ReactRouterLink[^)]*?\), \(jsx\("title"[^)]*?Reflex[^)]*?\)\)\)\)\)\)\)\)\)\)\),'
+    marker = '(jsx(ReactRouterLink, ({to:"https://reflex.dev"})'
+    start_idx = content.find(marker)
 
-    # Try the regex replacement
-    if re.search(pattern, content, re.DOTALL):
-        content = re.sub(pattern, '),', content, flags=re.DOTALL)
-        print(f"✓ Removed watermark using regex pattern")
-    else:
-        # Fallback: simple string-based removal
-        # Find the start and manually count parentheses
-        link_pattern = '(jsx(ReactRouterLink, ({to:"https://reflex.dev"}'
-        idx = content.find(link_pattern)
+    if start_idx != -1:
+        # Count parentheses from the start to find the matching closing paren
+        paren_count = 0
+        i = start_idx
+        found_end = False
 
-        if idx != -1:
-            # Count parentheses to find the end
-            start_idx = content.rfind('), ', 0, idx)
-            if start_idx == -1:
-                start_idx = content.rfind(')) ', 0, idx)
+        while i < len(content):
+            if content[i] == '(':
+                paren_count += 1
+            elif content[i] == ')':
+                paren_count -= 1
+                if paren_count == 0:
+                    # Found the matching closing paren
+                    end_idx = i + 1
 
-            # Find where "Reflex" ends
-            reflex_idx = content.find('"Reflex"', idx)
-            if reflex_idx != -1:
-                # Find the closing pattern after Reflex
-                end_idx = content.find(')))', reflex_idx)
-                if end_idx != -1:
-                    # Count additional closing parens
-                    extra_closes = content[end_idx:end_idx+20]
-                    close_count = len(extra_closes) - len(extra_closes.lstrip(')'))
+                    # Check if there's a comma after the component
+                    if end_idx < len(content) and content[end_idx] == ',':
+                        end_idx += 1
 
-                    if start_idx != -1:
-                        # Remove the watermark
-                        content = content[:start_idx] + '),' + content[end_idx + close_count:]
-                        print(f"✓ Removed watermark using fallback method")
+                    # Remove the entire component and its comma
+                    content = content[:start_idx] + content[end_idx:]
+                    found_end = True
+                    break
+            i += 1
 
-    if original_length != len(content):
-        with open(root_jsx, 'w') as f:
-            f.write(content)
-
-        removed_size = original_length - len(content)
-        print(f"  Removed {removed_size} bytes from {root_jsx}")
-        return True
+        if found_end:
+            print("✓ Removed watermark component")
+            if original_length != len(content):
+                with open(root_jsx, 'w') as f:
+                    f.write(content)
+                removed_size = original_length - len(content)
+                print(f"  Removed {removed_size} bytes from {root_jsx}")
+                return True
 
     print("Watermark not found (already removed or pattern changed)")
     return False

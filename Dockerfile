@@ -19,6 +19,7 @@ COPY . .
 # Pre-build frontend at image build time so runtime only serves static assets.
 RUN .venv/bin/reflex init && \
     .venv/bin/reflex export --frontend-only && \
+    python3 scripts/remove_watermarks.py && \
     mkdir -p /srv && \
     unzip -q frontend.zip -d /srv && \
     rm frontend.zip && \

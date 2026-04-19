@@ -27,7 +27,14 @@ RUN .venv/bin/reflex init && \
 
 RUN chmod +x /app/entrypoint.sh
 
-# Health check disabled - app running without health monitoring
+# Create non-root user
+RUN addgroup -S appuser && adduser -S appuser -G appuser
+USER appuser
+
+# Health check for the app
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
 ENV REFLEX_ENV=prod \
     PYTHONUNBUFFERED=1
 

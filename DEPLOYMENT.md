@@ -42,15 +42,18 @@ In Railway's dashboard under your project:
 ## Troubleshooting
 
 ### Port Issues
+
 Railway automatically sets the `PORT` environment variable. The Dockerfile exposes port 3000 and the app listens on `$PORT`.
 
 ### Build Failures
+
 Check Railway logs for details. Common issues:
 - Missing dependencies: Update `pyproject.toml`
 - Python version mismatch: Ensure Python 3.11+
 - Memory limits: Railway free tier has limited memory; may need to upgrade for large builds
 
 ### Out of Memory (OOM) Errors
+
 Railway free tier has ~512MB RAM, which may be insufficient for building Reflex apps.
 
 **Solutions:**
@@ -61,6 +64,7 @@ Railway free tier has ~512MB RAM, which may be insufficient for building Reflex 
 The app should stabilize once deployed, as the initial build uses the most memory.
 
 ### App Not Starting
+
 - Check Railway logs for startup errors
 - Ensure environment variables are set if required
 - Verify Reflex build completes successfully (first startup may take 1-2 minutes)

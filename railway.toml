@@ -1,6 +1,13 @@
 [build]
 builder = "dockerfile"
-watchPatterns = ["Dockerfile", "pyproject.toml", "uv.lock", "web/**", "Caddyfile", "entrypoint.sh"]
+watchPatterns = [
+  "Dockerfile",
+  "pyproject.toml",
+  "uv.lock",
+  "web/**",
+  "Caddyfile",
+  "entrypoint.sh",
+]
 
 [deploy]
 restartPolicyType = "on_failure"

@@ -627,7 +627,7 @@ dependencies = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "reflex", specifier = ">=0.8.28" }]
+requires-dist = [{ name = "reflex", specifier = "==0.8.28.post1" }]
 
 [[package]]
 name = "rich"

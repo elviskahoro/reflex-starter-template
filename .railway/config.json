@@ -1,0 +1,12 @@
+{
+  "environments": {
+    "preview": {
+      "displayName": "Preview",
+      "color": "0095FF"
+    },
+    "production": {
+      "displayName": "Production",
+      "color": "00D084"
+    }
+  }
+}

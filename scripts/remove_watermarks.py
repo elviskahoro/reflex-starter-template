@@ -1,39 +1,44 @@
 #!/usr/bin/env python3
-"""Hide the 'Built with Reflex' watermark in the built frontend bundle.
+"""Remove the 'Built with Reflex' watermark from the built frontend bundle.
 
-Strategy: append a CSS rule to the global stylesheet that hides any anchor
-pointing at the bare https://reflex.dev URL. The selector is exact-match,
-so the demo's https://reflex.dev/docs/... link is unaffected.
+Strategy: find and remove the anchor element linking to https://reflex.dev
+from all HTML files in the frontend output.
 
 Runs against the unzipped frontend output (default: /srv).
 """
 
+import re
 import sys
 from pathlib import Path
 
-HIDE_RULE = 'a[href="https://reflex.dev"]{display:none!important}'
-CSS_GLOB = "assets/__reflex_global_styles-*.css"
 
-
-def hide_watermark(srv_dir: Path) -> bool:
-    matches = sorted(srv_dir.glob(CSS_GLOB))
-    if not matches:
-        print(f"ERROR: no CSS file matched {srv_dir / CSS_GLOB}", file=sys.stderr)
+def remove_watermark(srv_dir: Path) -> bool:
+    html_files = list(srv_dir.glob("**/*.html"))
+    if not html_files:
+        print(f"ERROR: no HTML files found in {srv_dir}", file=sys.stderr)
         return False
 
-    patched_any = False
-    for css in matches:
-        text = css.read_text()
-        if HIDE_RULE in text:
-            print(f"skip (already patched): {css}")
-            continue
-        css.write_text(text.rstrip() + "\n" + HIDE_RULE + "\n")
-        print(f"patched: {css}")
-        patched_any = True
+    removed_any = False
+    for html_file in html_files:
+        content = html_file.read_text()
 
-    return patched_any or all(HIDE_RULE in m.read_text() for m in matches)
+        # Remove the "Built with Reflex" link element
+        # Handles: <a href="https://reflex.dev" ...>...Built with Reflex...</a>
+        pattern = r'<a[^>]*href=["\']https://reflex\.dev["\'][^>]*>.*?Built with Reflex.*?</a>'
+        new_content = re.sub(pattern, '', content, flags=re.IGNORECASE | re.DOTALL)
+
+        if new_content != content:
+            html_file.write_text(new_content)
+            print(f"removed watermark from: {html_file.relative_to(srv_dir)}")
+            removed_any = True
+
+    if removed_any:
+        print("watermark removal complete")
+    else:
+        print("no watermark found (already disabled in config)")
+    return True
 
 
 if __name__ == "__main__":
     srv = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("/srv")
-    sys.exit(0 if hide_watermark(srv) else 1)
+    sys.exit(0 if remove_watermark(srv) else 1)

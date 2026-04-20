@@ -21,7 +21,6 @@ RUN .venv/bin/reflex init && \
     .venv/bin/reflex export --frontend-only && \
     mkdir -p /srv && \
     unzip -q frontend.zip -d /srv && \
-    python3 scripts/remove_watermarks.py /srv && \
     rm frontend.zip && \
     rm -rf .web
 

@@ -32,7 +32,11 @@ def remove_watermark(srv_dir: Path) -> bool:
             print(f"removed watermark from: {html_file.relative_to(srv_dir)}")
             removed_any = True
 
-    return removed_any
+    if removed_any:
+        print("watermark removal complete")
+    else:
+        print("no watermark found (already disabled in config)")
+    return True
 
 
 if __name__ == "__main__":

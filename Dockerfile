@@ -27,8 +27,12 @@ RUN .venv/bin/reflex init && \
 
 RUN chmod +x /app/entrypoint.sh
 
+# Create .web directory with permissions for runtime state (Reflex backend-only mode needs this)
+RUN mkdir -p /app/.web/backend && chmod -R 755 /app/.web
+
 # Create non-root user
 RUN addgroup -S appuser && adduser -S appuser -G appuser
+RUN chown -R appuser:appuser /app/.web
 USER appuser
 
 # Health check for the app

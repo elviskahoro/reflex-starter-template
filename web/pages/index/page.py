@@ -16,7 +16,7 @@ class IndexState(rx.State):
 
     async def _get_greeting(self) -> str:
         """Backend function that processes requests and returns status."""
-        timestamp = datetime.now().strftime("%H:%M:%S")
+        timestamp = datetime.now().astimezone().strftime("%H:%M:%S")
         return f"Request #{self.count} processed at {timestamp}"
 
 

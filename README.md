@@ -19,7 +19,7 @@ The split-process model (Caddy + backend, supervised by `entrypoint.sh`) is what
 
 ## 2. Repository layout
 
-```
+```text
 .
 ├── Caddyfile              # Caddy config: static + reverse proxy to backend
 ├── Dockerfile             # Alpine + Python 3.11 + Node + Caddy; pre-builds frontend
@@ -182,6 +182,7 @@ The Reflex package is `web/`. If renaming to e.g. `myapp`:
 1. Create `web/pages/<name>/page.py` exporting a `page()` function returning `rx.Component`.
 2. Create `web/pages/<name>/__init__.py` re-exporting `page`.
 3. Register in `web/web.py`:
+
    ```python
    from web.pages.<name> import page as <name>_page
    app.add_page(component=<name>_page, route="/<name>", title="...")
@@ -196,7 +197,7 @@ The Reflex package is `web/`. If renaming to e.g. `myapp`:
 ## 9. Troubleshooting
 
 | Symptom | Likely cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Build OOM on Railway | Free tier has ~512MB; Next.js build can exceed it | Upgrade plan; the Dockerfile already pre-builds + discards `.web` to minimize runtime memory |
 | `/ping` works, page loads, but button does nothing | Caddy not proxying `/_event/*`, or backend not running | `railway logs`; verify `entrypoint.sh` started both processes; check `Caddyfile` `@backend_routes` block |
 | `502 Bad Gateway` on first request after deploy | Backend still warming up (first request triggers state init) | Wait 30–60s; healthcheck has `start-period=10s` but cold start can be longer |

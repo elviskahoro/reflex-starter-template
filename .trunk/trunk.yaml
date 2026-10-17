@@ -1,69 +1,185 @@
 # This file controls the behavior of Trunk: https://docs.trunk.io/cli
 # To learn more about the format of this file, see https://docs.trunk.io/reference/trunk-yaml
 version: 0.1
-
 cli:
-  version: 1.22.10
+  version: 1.25.0
 
 # Trunk provides extensibility via plugins. (https://docs.trunk.io/plugins)
 plugins:
   sources:
     - id: trunk
-      ref: v1.6.7
+      ref: v1.11.0
       uri: https://github.com/trunk-io/plugins
 
     - id: oss-linter-trunk
+      ref: v0.2026.04.14.00.00
+      uri: https://github.com/elviskahoro/oss-linter-trunk-config
 
-      ref: v0.2025.01.23.16.10
-      uri: https://github.com/elviskahoro/oss-linter-trunk
-
+    - id: add-trailing-comma-plugin
+      ref: v0.1.0
+      uri: https://github.com/elviskahoro/oss-linter-trunk-add-trailing-comma
 
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
+  definitions:
+    - name: ruff
+      commands:
+        - name: format
+          enabled: true
+        - name: lint
+          enabled: true
+
   enabled:
-    - actionlint@1.7.7
-    - checkov@3.2.382
-    - git-diff-check
-    - markdownlint@0.44.0
-    - osv-scanner@1.9.2
-    - oxipng@9.1.4
-    - pyright@1.1.396
-    - ruff@0.9.9
-    - shellcheck@0.10.0
-    - shfmt@3.6.0
-    - squawk@1.5.4
-    - svgo@3.3.2
-    - taplo@0.9.3
-    - trivy@0.59.1
-    - trufflehog@3.88.15
-    - yamllint@1.35.1
+    - add-trailing-comma@4.0.0
+    - bandit@1.9.4
+    - checkov@3.3.19
+    - markdown-link-check@3.15.0
+    - markdownlint-cli2@0.23.3
+    - osv-scanner@2.6.0
+    - oxipng@10.1.1
+    - pyright@1.1.414
+    - ruff@0.16.8
+    - semgrep@1.177.0
+    - shellcheck@0.11.0
+    - shfmt@3.13.1
+    - squawk@2.65.0
+    - svgo@4.1.0
+    - taplo@0.10.0
+    - trivy@0.70.0
+    - trufflehog@3.95.3
+    - ty@0.0.35
+    - yamlfmt@0.21.0
+    - yamllint@1.38.0
 
   disabled:
-    - bandit
+    - ansible-lint
+    - autopep8
+    - biome
     - black
+    - brakeman
+    - buf-breaking
+    - buf-format
+    - buf-lint
+    - cfnlint
+    - circleci
+    - clang-format
+    - clang-tidy
+    - clippy
+    - cmake-format
+    - codespell
+    - cspell
+    - cue-fmt
+    - dart
+    - deno
+    - detekt
+    - detekt-explicit
+    - detekt-gradle
+    - djlint
+    - dotenv-linter
+    - dotnet-format
+    - dustilock
     - eslint
     - flake8
+    - git-diff-check
+    - gitleaks
+    - gofmt
+    - gofumpt
+    - goimports
+    - gokart
+    - golangci-lint
+    - golangci-lint2
+    - golines
+    - google-java-format
+    - graphql-schema-linter
+    - hadolint
+    - haml-lint
+    - include-what-you-use
     - isort
-    - markdown-link-check
+    - ktlint
+    - kube-linter
+    - ls-lint
+    - markdown-table-prettify
+    - markdownlint
     - mypy
+    - nancy
+    - nbstripout
+    - nixpkgs-fmt
+    - opa
+    - perlcritic
+    - perltidy
+    - php-cs-fixer
+    - phpstan
+    - pmd
+    - pragma-once
+    - pre-commit-hooks
     - prettier
+    - prisma
+    - psscriptanalyzer
     - pylint
+    - regal
     - remark-lint
-    - semgrep
+    - renovate
+    - rome
+    - rubocop
+    - ruff-nbqa
+    - rufo
+    - rumdl
+    - rustfmt
+    - scalafmt
+    - snyk
+    - sort-package-json
+    - sourcery
+    - sql-formatter
+    - sqlfluff
+    - sqlfmt
+    - standardrb
+    - stringslint
     - stylelint
+    - stylua
+    - swiftformat
+    - swiftlint
+    - terraform
+    - terragrunt
+    - terrascan
+    - tflint
+    - tfsec
+    - tofu
+    - trufflehog-git
     - trunk-toolbox
+    - txtpbfmt
+    - yapf
 
   ignore:
-    - linters: [ALL]
-      paths:
-        - alembic/**
-        - docs/tutorial/**
-        - docs/datatable_tutorial/**
-
     - linters: [ruff]
       paths:
-        - integration/benchmarks/**
         - "*.ipynb"
+
+    # checkov and semgrep are IaC-focused here; skip them on source and
+    # binary files so they only weigh in on Dockerfiles, YAML, TOML, etc.
+    - linters: [checkov, semgrep]
+      paths:
+        - "**/*.py"
+        - "**/*.sh"
+        - "**/*.md"
+        - "**/*.png"
+        - "**/*.jpg"
+        - "**/*.jpeg"
+        - "**/*.gif"
+        - "**/*.ico"
+        - "**/*.svg"
+        - "**/*.webp"
+        - "**/*.zip"
+        - "**/*.tar"
+        - "**/*.gz"
+        - "**/*.bz2"
+        - "**/*.7z"
+        - "**/*.csv"
+        - "**/*.xml"
+        - "**/*.proto"
+
+    - linters: [trivy]
+      paths:
+        - .trunk/**
 
   exported_configs:
     - plugin_id: oss-linter-trunk
@@ -88,6 +204,7 @@ lint:
         - configs/.sqlfluff
         - configs/.stylelintrc.js
         - configs/.stylelintrc.yaml
+        - configs/.yamlfmt
         - configs/.yamllint.yaml
         - configs/pyrightconfig.json
         - configs/ruff.toml
@@ -96,10 +213,14 @@ lint:
 
 actions:
   enabled:
-    - trunk-announce
     - trunk-cache-prune
     - trunk-upgrade-available
 
   disabled:
-    - trunk-check-pre-push
+    # git-hook-triggered actions disabled so trunk releases core.hooksPath to
+    # Entire (checkpoints). trunk-check-pre-push is redundant with the required
+    # CI check; git-lfs is unused.
     - trunk-fmt-pre-commit
+    - git-lfs
+    - trunk-announce
+    - trunk-check-pre-push

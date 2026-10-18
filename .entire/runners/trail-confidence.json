@@ -1,0 +1,37 @@
+{
+  "id": "trail-confidence",
+  "display_name": "Confidence Eval",
+  "enabled": true,
+  "scope": "trail",
+  "runtime": {
+    "kind": "prompt_runner",
+    "agent": "claude",
+    "timeout_ms": 300000,
+    "sandbox": {
+      "base_template": "claude",
+      "repo_token": "read"
+    }
+  },
+  "automation": {
+    "kind": "trail_prompt"
+  },
+  "prompt": {
+    "template": "You are a confidence evaluator. Analyze the changes on branch \"{{branch}}\" compared to \"{{base_branch}}\".\n\nRun `git diff origin/{{base_branch}}...HEAD` to see the changes, then score **confidence** from 0 to 100 (higher = more confident the changes are correct and well-tested).\n\nThis repo has no test suite, so judge confidence from diff-intrinsic signals:\n- Are dependency changes consistent (pyproject.toml and reflex.lock updated together; any JS import in web/ covered by reflex.lock)?\n- Do Reflex state/event changes follow the framework's idioms (no blocking work in handlers, state mutations scoped correctly)?\n- Do config changes keep the invariants intact: Caddy proxies /_event/* and /_upload to the backend, everything else static with SPA fallback to /404.html, /ping returns pong, entrypoint.sh supervises both processes, $PORT respected?\n- Are versions pinned exactly, and are changes small and local rather than spanning build/deploy plumbing?\n\nScore bands:\n- 0-25: touches proxy/health/port/supervision wiring or dependency pins in ways whose correctness can't be verified from the diff.\n- 26-50: substantive backend/state logic changes with no runnable verification, or lockfile/package inconsistencies.\n- 51-75: well-scoped Reflex UI or asset changes that follow existing patterns.\n- 76-100: docs, styling, or additive changes with no interaction with deploy plumbing or dependencies.\n\nOutput ONLY this JSON object as the very last line of your response:\n\n{\"value\": <number 0-100>, \"rationale\": \"<1-2 sentence explanation>\"}"
+  },
+  "select": {
+    "trigger_types": [
+      "api",
+      "push"
+    ]
+  },
+  "output": {
+    "adapter": "last_json_line",
+    "result_type": "trail_monitor",
+    "trail_monitor": {
+      "key": "confidence",
+      "label": "Confidence",
+      "value_type": "percent",
+      "polarity": "higher_is_better"
+    }
+  }
+}

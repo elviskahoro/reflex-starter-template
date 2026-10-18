@@ -1,0 +1,37 @@
+{
+  "id": "trail-drift",
+  "display_name": "Drift Eval",
+  "enabled": true,
+  "scope": "trail",
+  "runtime": {
+    "kind": "prompt_runner",
+    "agent": "claude",
+    "timeout_ms": 300000,
+    "sandbox": {
+      "base_template": "claude",
+      "repo_token": "read"
+    }
+  },
+  "automation": {
+    "kind": "trail_prompt"
+  },
+  "prompt": {
+    "template": "You are a drift evaluator. Analyze the changes on branch \"{{branch}}\" compared to \"{{base_branch}}\".\n\nRun `git diff origin/{{base_branch}}...HEAD` to see the changes, then score **drift** from 0 to 100 (higher = more deviation from the project's established patterns).\n\nEstablished patterns in this repo:\n- Split-process model: prebuilt static frontend served by Caddy, Reflex backend reverse-proxied only for /_event/* and /_upload, SPA fallback to /404.html, both supervised by entrypoint.sh.\n- Dependencies pinned exactly (reflex version in reflex.lock/pyproject.toml); frontend JS imports must be present in reflex.lock.\n- Module boundaries enforced via tach and lint standards via trunk; CI guards are added, not removed.\n- No Reflex watermark; app configured via rxconfig.py (app_name \"web\").\n\nScore bands:\n- 0-20: changes that follow existing conventions (standard Reflex components/state, pinned dep bumps in lockstep, config edits in place).\n- 21-50: new patterns introduced alongside existing ones (new styling utilities, new tooling) without removing old ones.\n- 51-75: restructured wiring (proxy route changes, supervision changes, new build steps) or dependency handling that bypasses the lockfile.\n- 76-100: abandons the split-process/deploy architecture, unpins dependencies, removes boundary/lint guardrails, or replaces established tooling wholesale.\n\nOutput ONLY this JSON object as the very last line of your response:\n\n{\"value\": <number 0-100>, \"rationale\": \"<1-2 sentence explanation>\"}"
+  },
+  "select": {
+    "trigger_types": [
+      "api",
+      "push"
+    ]
+  },
+  "output": {
+    "adapter": "last_json_line",
+    "result_type": "trail_monitor",
+    "trail_monitor": {
+      "key": "drift",
+      "label": "Drift",
+      "value_type": "percent",
+      "polarity": "lower_is_better"
+    }
+  }
+}

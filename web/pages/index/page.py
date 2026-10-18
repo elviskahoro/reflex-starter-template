@@ -9,6 +9,7 @@ class IndexState(rx.State):
     count: int = 0
     message: str = "Click the button to test the backend"
 
+    @rx.event
     async def increment_and_greet(self) -> None:
         """Call backend logic to verify it works."""
         self.count += 1

@@ -1,0 +1,106 @@
+# Reflex architecture: web.web -> web.pages.index (public page export only).
+# rxconfig is an isolated framework entrypoint. New module imports require review.
+# https://docs.gauge.sh/usage/configuration
+source_roots = ["."]
+root_module = "forbid"
+exact = true
+forbid_circular_dependencies = true
+ignore_type_checking_imports = false
+include_string_imports = true
+layers = ["entrypoints", { name = "pages", closed = true }]
+layers_explicit_depends_on = true
+
+# Do not let .gitignore silently remove application code from architecture checks.
+respect_gitignore = false
+exclude = [
+  ".agents/**",
+  ".claude/**",
+  ".context/**",
+  ".git/**",
+  ".trunk/**",
+  ".venv/**",
+  ".web/**",
+  "**/__pycache__/**",
+  "symlink/**",
+]
+
+[rules]
+unused_ignore_directives = "error"
+require_ignore_directive_reasons = "error"
+unused_external_dependencies = "error"
+local_imports = "error"
+
+[cache]
+file_dependencies = [
+  "tests/**",
+  "pyproject.toml",
+  "uv.lock",
+  "tach.toml",
+  "rxconfig.py",
+  "reflex.lock/**",
+]
+
+# Default-deny new packages instead of folding their imports into a parent module.
+# Single-level globs keep each page's implementation inside its package boundary.
+# Concrete module declarations below override these defaults.
+[[modules]]
+path = "web.*"
+layer = "entrypoints"
+depends_on = []
+depends_on_external = []
+visibility = []
+
+[[modules]]
+path = "web.pages.*"
+layer = "pages"
+depends_on = []
+depends_on_external = []
+visibility = []
+
+# Reflex loads these entrypoints directly; other modules cannot import them.
+[[modules]]
+path = "rxconfig"
+layer = "entrypoints"
+depends_on = []
+depends_on_external = ["reflex"]
+visibility = []
+
+[[modules]]
+path = "web"
+layer = "entrypoints"
+depends_on = []
+depends_on_external = []
+visibility = []
+
+[[modules]]
+path = "web.web"
+layer = "entrypoints"
+depends_on = ["web.pages.index"]
+depends_on_external = ["reflex"]
+visibility = []
+
+[[modules]]
+path = "web.pages"
+layer = "pages"
+depends_on = []
+depends_on_external = []
+visibility = []
+
+# Registration uses only the package's public page function.
+[[modules]]
+path = "web.pages.index"
+layer = "pages"
+depends_on = []
+depends_on_external = ["reflex"]
+visibility = ["web.web"]
+
+[[interfaces]]
+# Modules have no public members unless an explicit interface below exposes them.
+expose = []
+
+[[interfaces]]
+# Interface selectors are regexes, unlike module paths: escape literal dots.
+from = ['web\.pages\.index']
+expose = ["page"]
+visibility = ["web.web"]
+exclusive = true

@@ -88,6 +88,56 @@ uv run reflex run      # starts dev server on http://localhost:3000
 
 Visit `http://localhost:3000`. The default page (`web/pages/index/page.py`) renders a counter that calls the backend on click — use this as the smoke test that the backend wiring works.
 
+### Check architecture
+
+Tach is pinned in the development dependencies. After `uv sync --frozen`, run:
+
+```bash
+uv run --frozen tach check
+uv run --frozen tach check-external
+```
+
+Trunk runs both checks when Python files, `tach.toml`, `pyproject.toml`, or
+`uv.lock` change. Any nonzero exit status fails the check, including graph-wide
+errors without a file or line number.
+
+`tach.toml` requires explicit, used dependencies and rejects circular dependencies.
+Imports under `TYPE_CHECKING` and inside functions follow the same boundaries.
+String import detection is enabled for module paths containing at least two dots
+(Tach's supported scope). Every configurable rule is an error, including unused
+suppression comments and suppressions without a reason. Checks include ignored
+source files; only the tooling, generated, and vendored directories listed in
+`tach.toml` are excluded. Unconfigured root modules cannot participate in local
+dependencies.
+
+The graph is adapted to the modules that exist in this Reflex app:
+
+```mermaid
+flowchart LR
+    app["web.web"] -->|page| index["web.pages.index"]
+    config["rxconfig — isolated configuration"]
+```
+
+The `web` and `web.pages` namespaces also have no dependencies. New modules under
+`web.*` and new pages under `web.pages.*` receive separate boundaries with no
+allowed dependencies, external packages, or consumers. Each page remains one
+module, including its `__init__.py`, view, and state implementation. Modules have
+no public members by default; the index page exposes only `page` to `web.web`.
+That interface is exclusive, so adding another interface cannot silently widen
+the app's access to the page internals.
+
+The page layer is closed: if a shared layer is added beneath it, the app must
+access it through pages. Page implementations cannot import application or
+configuration entrypoints or other pages. When adding a page or dependency,
+declare its module, layer, visibility, external dependencies, and public interface
+in `tach.toml`, then rerun both checks. Avoid `tach sync` as a routine fix: it can
+authorize an unintended dependency.
+
+These rules follow Tach's documentation for
+[module defaults](https://github.com/gauge-sh/tach/blob/v0.35.3/docs/usage/configuration.md#modules),
+[exclusive interfaces](https://github.com/gauge-sh/tach/blob/v0.35.3/docs/usage/interfaces.md#example-exclusive-interface),
+and [closed layers](https://github.com/gauge-sh/tach/blob/v0.35.3/docs/usage/layers.md#closed-layers).
+
 ---
 
 ## 6. Build and run the production image locally

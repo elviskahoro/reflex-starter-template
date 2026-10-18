@@ -7,3 +7,22 @@ dependencies = ["reflex==0.10.0"]
 
 [dependency-groups]
 dev = ["tach==0.35.3"]
+
+[tool.pyrefly]
+project-includes = ["web", "rxconfig.py"]
+project-excludes = ["**/.venv/**", "**/.web/**", "**/__pycache__/**"]
+python-version = "3.11"
+search-path = ["."]
+untyped-def-behavior = "check-and-infer-return-any"
+enabled-ignores = ["pyrefly"]
+check-unannotated-defs = true
+infer-with-first-use = false
+min-severity = "warn"
+
+[tool.pyrefly.errors]
+implicit-any = true
+implicitly-defined-attribute = true
+unannotated-parameter = true
+unannotated-return = true
+unused-ignore = true
+unused-coroutine = true

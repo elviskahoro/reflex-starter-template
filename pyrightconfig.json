@@ -1,0 +1,5 @@
+{
+  "extends": ".trunk/plugins/oss-linter-trunk/configs/pyrightconfig.json",
+  "venvPath": ".",
+  "venv": ".venv"
+}

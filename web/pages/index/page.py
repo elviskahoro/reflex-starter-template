@@ -9,6 +9,7 @@ class IndexState(rx.State):
     count: int = 0
     message: str = "Click the button to test the backend"
 
+    @rx.event
     async def increment_and_greet(self) -> None:
         """Call backend logic to verify it works."""
         self.count += 1
@@ -16,7 +17,7 @@ class IndexState(rx.State):
 
     async def _get_greeting(self) -> str:
         """Backend function that processes requests and returns status."""
-        timestamp = datetime.now().strftime("%H:%M:%S")
+        timestamp = datetime.now().astimezone().strftime("%H:%M:%S")
         return f"Request #{self.count} processed at {timestamp}"
 
 

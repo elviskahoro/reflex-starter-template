@@ -19,6 +19,35 @@ plugins:
       ref: v0.1.0
       uri: https://github.com/elviskahoro/oss-linter-trunk-add-trailing-comma
 
+    - id: pyrefly-plugin
+      ref: v0.2.0
+      uri: https://github.com/elviskahoro/oss-linter-trunk-pyrefly
+
+    - id: tach-plugin
+      ref: v0.1.0
+      uri: https://github.com/elviskahoro/oss-linter-trunk-tach
+
+# actionlint switched from upstream rhysd/actionlint to the actively maintained
+# fork kjanat/actionlint (forked from upstream v1.7.12, independent releases from
+# v1.8.0, CLI-compatible). Trunk's plugin catalog still pins the rhysd download
+# URL, so override it here until the catalog carries the fork. Asset naming and
+# the -format JSON output the plugin's `lint` command relies on are unchanged.
+downloads:
+  - name: actionlint
+    downloads:
+      - os:
+          linux: linux
+          macos: darwin
+        cpu:
+          x86_64: amd64
+          arm_64: arm64
+        url: https://github.com/kjanat/actionlint/releases/download/v${version}/actionlint_${version}_${os}_${cpu}.tar.gz
+      - os: windows
+        cpu:
+          x86_64: amd64
+          arm_64: arm64
+        url: https://github.com/kjanat/actionlint/releases/download/v${version}/actionlint_${version}_windows_${cpu}.zip
+
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   definitions:
@@ -29,14 +58,55 @@ lint:
         - name: lint
           enabled: true
 
+    # Tach also reports graph-wide failures without a file/line location.
+    # Use its exit status so cycles, stale dependencies, and config errors fail.
+    - name: tach
+      files: [python, tach-config]
+      environment:
+        - name: PATH
+          list: ["${linter}", "${env.PATH}"]
+      commands:
+        - name: lint
+          run: uv run --frozen tach check
+          success_codes: [0]
+          read_output_from: stderr
+          batch: true
+          cache_results: false
+        - name: external
+          run: uv run --frozen tach check-external
+          output: regex
+          parse_regex: "\\[FAIL\\] (?P<path>[^:]+):(?P<line>\\d+): (?P<message>.*)"
+          success_codes: [0]
+          read_output_from: stderr
+          batch: true
+          cache_results: false
+
+    # Vale is scoped exclusively to docs/**. Match the full relative path so
+    # markdown outside docs/ (e.g. README.md) is not included.
+    - name: vale
+      files: [docs-markdown]
+
+  files:
+    - name: tach-config
+      regexes:
+        - ^(tach\.toml|pyproject\.toml|uv\.lock)$
+
+    - name: docs-markdown
+      regexes:
+        - ^docs/.+\.(md|mdx)$
+
   enabled:
+    - actionlint@1.17.0
     - add-trailing-comma@4.0.0
     - bandit@1.9.4
+    - buildifier@8.2.1
     - checkov@3.3.19
     - markdown-link-check@3.15.0
     - markdownlint-cli2@0.23.3
     - osv-scanner@2.6.0
     - oxipng@10.1.1
+    - pinact@4.0.0
+    - pyrefly@1.3.1
     - pyright@1.1.414
     - ruff@0.16.8
     - semgrep@1.177.0
@@ -44,10 +114,12 @@ lint:
     - shfmt@3.13.1
     - squawk@2.65.0
     - svgo@4.1.0
+    - tach@0.35.3
     - taplo@0.10.0
     - trivy@0.70.0
     - trufflehog@3.95.3
     - ty@0.0.35
+    - vale@3.14.1
     - yamlfmt@0.21.0
     - yamllint@1.38.0
 
@@ -150,9 +222,24 @@ lint:
     - yapf
 
   ignore:
+    - linters: [ALL]
+      paths:
+        - data/**
+        - tmp/**
+        - worktrees/**
+        - "**/*.openapi.json"
+        - "**/*.openapi.yaml"
+        - "**/*.openapi.yml"
+
     - linters: [ruff]
       paths:
         - "*.ipynb"
+
+    # Documentation MDX mixes JSX components with fenced code blocks, which
+    # markdownlint misreads as inconsistent code-block styles (MD046).
+    - linters: [markdownlint, markdownlint-cli2]
+      paths:
+        - docs/**/*.mdx
 
     # checkov and semgrep are IaC-focused here; skip them on source and
     # binary files so they only weigh in on Dockerfiles, YAML, TOML, etc.
@@ -161,6 +248,7 @@ lint:
         - "**/*.py"
         - "**/*.sh"
         - "**/*.md"
+        - "**/*.parquet"
         - "**/*.png"
         - "**/*.jpg"
         - "**/*.jpeg"
@@ -180,6 +268,10 @@ lint:
     - linters: [trivy]
       paths:
         - .trunk/**
+
+    - linters: [trufflehog]
+      paths:
+        - "**/*.parquet"
 
   exported_configs:
     - plugin_id: oss-linter-trunk

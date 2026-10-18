@@ -1,3 +1,5 @@
+"""Reflex app entrypoint."""
+
 from __future__ import annotations
 
 import reflex as rx

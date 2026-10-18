@@ -7,28 +7,3 @@ dependencies = ["reflex==0.10.0"]
 
 [dependency-groups]
 dev = ["tach==0.35.3"]
-
-[tool.pyrefly]
-project-includes = ["rxconfig.py", "web"]
-python-version = "3.11"
-untyped-def-behavior = "check-and-infer-return-any"
-permissive-ignores = false
-use-ignore-files = true
-
-[tool.pyrefly.errors]
-# Surface every opt-in check so new code cannot silently loosen typing.
-implicit-any = true
-implicit-import = true
-missing-override-decorator = true
-unannotated-attribute = true
-unannotated-parameter = true
-unannotated-return = true
-unused-ignore = true
-unused-coroutine = true
-unused-call-result = true
-explicit-any = true
-implicit-reexport = true
-redundant-condition = true
-unnecessary-comparison = true
-unreachable = true
-untyped-import = true

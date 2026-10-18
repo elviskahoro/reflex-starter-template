@@ -1,3 +1,5 @@
+"""Reflex framework configuration."""
+
 import reflex as rx
 from reflex.plugins.sitemap import SitemapPlugin
 

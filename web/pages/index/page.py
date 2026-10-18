@@ -1,3 +1,5 @@
+"""Index page."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -6,6 +8,8 @@ import reflex as rx
 
 
 class IndexState(rx.State):
+    """State for the index page."""
+
     count: int = 0
     message: str = "Click the button to test the backend"
 
@@ -22,6 +26,7 @@ class IndexState(rx.State):
 
 
 def page() -> rx.Component:
+    """Render the welcome page."""
     # Welcome Page (Index)
     return rx.container(
         rx.color_mode.button(

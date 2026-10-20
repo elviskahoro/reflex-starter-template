@@ -1,3 +1,5 @@
+"""Reflex app entrypoint."""
+
 from __future__ import annotations
 
 import reflex as rx
@@ -5,7 +7,7 @@ import reflex as rx
 from web.pages.index import page
 
 app = rx.App()
-app.add_page(
+app.add_page(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
     component=page,
     route="/",
     title="Title",

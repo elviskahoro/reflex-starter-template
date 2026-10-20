@@ -1,3 +1,5 @@
+"""Index page."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -6,6 +8,8 @@ import reflex as rx
 
 
 class IndexState(rx.State):
+    """State for the index page."""
+
     count: int = 0
     message: str = "Click the button to test the backend"
 
@@ -22,13 +26,14 @@ class IndexState(rx.State):
 
 
 def page() -> rx.Component:
+    """Render the welcome page."""
     # Welcome Page (Index)
-    return rx.container(
-        rx.color_mode.button(
+    return rx.container(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
+        rx.color_mode.button(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
             position="top-right",
         ),
-        rx.vstack(
-            rx.heading(
+        rx.vstack(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
+            rx.heading(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
                 "Welcome to Reflex!",
                 size="9",
             ),
@@ -44,7 +49,7 @@ def page() -> rx.Component:
                 font_weight="bold",
                 as_="span",
             ),
-            rx.button(
+            rx.button(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
                 "Test Backend",
                 on_click=IndexState.increment_and_greet,
                 size="3",
@@ -53,8 +58,8 @@ def page() -> rx.Component:
                 f"Total requests: {IndexState.count}",
                 size="4",
             ),
-            rx.link(
-                rx.button("Check out our docs!"),
+            rx.link(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
+                rx.button("Check out our docs!"),  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
                 href="https://reflex.dev/docs/getting-started/introduction/",
                 is_external=True,
             ),

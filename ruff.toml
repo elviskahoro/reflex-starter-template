@@ -1,0 +1,25 @@
+# Strictest practical ruff: every rule, with only conflicting/contradictory ones off.
+target-version = "py311"
+
+[format]
+quote-style = "double"
+docstring-code-format = true
+
+[lint]
+select = ["ALL"]
+fixable = ["ALL"]
+ignore = [
+  "COM812", # conflicts with the formatter
+  "D203",   # conflicts with D211
+  "D213",   # conflicts with D212
+  "CPY001", # no per-file copyright headers
+]
+
+[lint.isort]
+case-sensitive = true
+combine-as-imports = true
+force-wrap-aliases = true
+order-by-type = true
+
+[lint.pydocstyle]
+convention = "google"

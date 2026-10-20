@@ -82,13 +82,13 @@ lint:
           list: ["${linter}", "${env.PATH}"]
       commands:
         - name: lint
-          run: uv run --frozen tach check
+          run: uv run --frozen --directory ${workspace} tach check
           success_codes: [0]
           read_output_from: stderr
           batch: true
           cache_results: false
         - name: external
-          run: uv run --frozen tach check-external
+          run: uv run --frozen --directory ${workspace} tach check-external
           output: regex
           parse_regex: "\\[FAIL\\] (?P<path>[^:]+):(?P<line>\\d+): (?P<message>.*)"
           success_codes: [0]

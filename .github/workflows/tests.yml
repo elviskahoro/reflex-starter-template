@@ -1,0 +1,38 @@
+# Test gate for the Trunk merge queue (see .trunk/trunk.yaml: merge.required_statuses).
+#
+# - pull_request on main gates ordinary PRs.
+# - push on trunk-merge/** is the Trunk merge queue testing a PR stack as if it
+#   had already merged, so the queue catches tests that only fail on the merge
+#   result, not just on the PR head.
+# - push on main is the post-merge safety net, matching gtm-sdk's tests gate.
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - trunk-merge/**
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Caching is on by default (enable-cache: auto) for hosted runners.
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Install dependencies
+        run: uv sync --frozen --group dev
+
+      - name: Run tests
+        run: uv run pytest -q

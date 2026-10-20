@@ -58,6 +58,21 @@ lint:
         - name: lint
           enabled: true
 
+    # trunk runs linters from a sandboxed tmp dir with `env -i`, so pyright
+    # cannot find the project deps; point it at the workspace venv explicitly.
+    - name: pyright
+      commands:
+        - name: lint
+          run: pyright --pythonpath ${workspace}/.venv/bin/python --project ${workspace}/pyrightconfig.json --outputjson ${target}
+      direct_configs:
+        - pyrightconfig.json
+        - configs/pyrightconfig.json
+      affects_cache:
+        - pyrightconfig.json
+        - configs/pyrightconfig.json
+        - pyproject.toml
+        - setup.cfg
+
     # Tach also reports graph-wide failures without a file/line location.
     # Use its exit status so cycles, stale dependencies, and config errors fail.
     - name: tach

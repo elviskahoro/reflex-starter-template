@@ -1,0 +1,101 @@
+# Lint gate for the Trunk merge queue (see .trunk/trunk.yaml: merge.required_statuses).
+#
+# Trunk only fails on NEW issues (findings introduced relative to the upstream
+# base), so the ~2k pre-existing findings on main do not block PRs; a PR passes
+# by not making lint worse. `--ci` plus stdin redirection is required: without
+# them trunk can hang on an interactive prompt in CI (observed in gtm-sdk).
+#
+# Trigger notes:
+# - pull_request on main gates ordinary PRs against the merge ref's first
+#   parent (HEAD^1): the exact, fresh main tip GitHub used to build
+#   refs/pull/N/merge, the same base trunk-io/trunk-action's pull_request.sh
+#   computes. github.event.pull_request.base.sha must NOT be used here -- it
+#   is the base tip frozen at PR creation and never advances, so a long-lived
+#   PR would lint all of main's drift since creation, and merging main into
+#   the branch does not refresh it (only a rebase does).
+# - push on trunk-merge/** is the Trunk merge queue testing a PR stack as if
+#   it had already merged; HEAD^1 is the main tip the queue branch was stacked
+#   on, so the diff is exactly the queued PRs' combined changes (the same base
+#   trunk-action's trunk_merge.sh computes for queue branches).
+# - There is deliberately no push-to-main lint run: on a push to main, HEAD
+#   equals origin/main, so any upstream diff would be HEAD against itself and
+#   could never fail. Direct pushes are blocked by branch protection once the
+#   queue is enabled, and a full `trunk check --all` safety net only becomes
+#   viable after main's ~2k pre-existing findings are converged (--all counts
+#   them all as new).
+name: Trunk Check
+
+on:
+  push:
+    branches:
+      - trunk-merge/**
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  trunk-check:
+    name: Trunk Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out (full depth so trunk can resolve the upstream base)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # Project dependencies must exist before trunk check: the pyrefly plugin
+      # resolves imports against ${workspace}/.venv (see pyrefly.toml), and
+      # without it every `import reflex` surfaces as a missing-import error
+      # and fails any PR that adds Python. gtm-sdk's lint pipeline does the
+      # same (its .rwx/trunk-check.yml deps task runs uv sync before checks).
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Install dependencies
+        run: uv sync --frozen --group dev
+
+      # trunk.io/releases/trunk is latest-only with no versioned URL, so pin
+      # the launcher bytes by checksum; any upstream change fails closed. The
+      # launcher bootstraps the exact CLI version pinned in .trunk/trunk.yaml.
+      - name: Install trunk (checksum-pinned launcher)
+        run: |
+          set -euo pipefail
+          trunk_launcher="$(mktemp)"
+          if ! curl -fsSL https://trunk.io/releases/trunk -o "${trunk_launcher}" ||
+            ! echo "700f8bbedfd226595999ea2202b9a7af75ba8398dd711f5f159f5bbba6cbf322  ${trunk_launcher}" | sha256sum -c -; then
+            rm -f "${trunk_launcher}"
+            echo "error: trunk launcher download or checksum failed" >&2
+            exit 1
+          fi
+          sudo install -m 755 "${trunk_launcher}" /usr/local/bin/trunk
+          rm -f "${trunk_launcher}"
+
+      - name: "Trunk check (PR: new issues vs the merge ref's first parent)"
+        if: github.event_name == 'pull_request'
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/pull/${PR_NUMBER}/merge" ]]; then
+            # Merge-ref checkout (the normal pull_request case): HEAD is the
+            # merge commit GitHub built from the fresh main tip, so HEAD^1 is
+            # that exact base -- the same guard and upstream trunk-action's
+            # pull_request.sh uses. We use this instead of
+            # github.event.pull_request.base.sha, which is frozen at PR
+            # creation and never advances.
+            upstream="$(git rev-parse HEAD^1)"
+          else
+            # Not on the merge ref: conflicted PRs can end up checked out on
+            # the PR head, where HEAD^1 would be the branch's previous commit
+            # rather than main's tip. Fall back to the live merge base with
+            # origin/main -- fresher than trunk-action's base.sha fallback,
+            # so a long-lived PR still lints only its own changes.
+            upstream="$(git merge-base HEAD origin/main)"
+          fi
+          trunk check --upstream="${upstream}" --ci < /dev/null
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+
+      - name: "Trunk check (queue branch: new issues vs the stacked main tip)"
+        if: github.event_name == 'push'
+        run: trunk check --upstream="$(git rev-parse HEAD^1)" --ci < /dev/null

@@ -23,3 +23,7 @@ order-by-type = true
 
 [lint.pydocstyle]
 convention = "google"
+
+[lint.per-file-ignores]
+# assert is pytest's normal check mechanism, not a production safety bypass.
+"tests/**" = ["S101"]

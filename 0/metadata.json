@@ -1,0 +1,76 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M5GBC465S1ZPHRX70A1F5GZ3",
+  "session_id": "1021be26-d7a0-4687-9196-c4e497c021e9",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-21T23:05:07.49431Z",
+  "branch": "conductor/ci/cd-checks-setup",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    ".github/workflows/pullfrog.yml",
+    ".github/workflows/reflex-build.yml",
+    ".github/workflows/tests.yml",
+    ".github/workflows/trunk-check.yml",
+    ".trunk/trunk.yaml",
+    "pyproject.toml",
+    "ruff.toml",
+    "tach.toml",
+    "tests/__init__.py",
+    "tests/test_status_card.py",
+    "uv.lock"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "090d16aead6f",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 4,
+    "cache_creation_tokens": 35124,
+    "cache_read_tokens": 58187,
+    "output_tokens": 2464,
+    "api_call_count": 2
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-21T23:05:07.471281Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 10,
+    "total_committed": 0,
+    "total_lines_changed": 10,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 536,
+      "user_lines_removed": 10,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".github/workflows/pullfrog.yml": 53,
+        ".github/workflows/reflex-build.yml": 56,
+        ".github/workflows/tests.yml": 42,
+        ".github/workflows/trunk-check.yml": 103,
+        ".trunk/trunk.yaml": 47,
+        "pyproject.toml": 20,
+        "ruff.toml": 5,
+        "tach.toml": 38,
+        "tests/__init__.py": 1,
+        "tests/test_status_card.py": 72,
+        "uv.lock": 99
+      },
+      "user_removed_per_file": {
+        "pyproject.toml": 1,
+        "tach.toml": 8,
+        "uv.lock": 1
+      }
+    }
+  ]
+}

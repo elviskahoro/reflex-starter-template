@@ -1,0 +1,283 @@
+You are a code reviewer. Review the code changes shown below.
+
+Return only the final review. Do NOT narrate your process, mention files you opened, or describe intermediate checks.
+If you use tools while reviewing, finish all tool use before emitting the final review, and put the final review only after the last tool call.
+Do NOT build the project, run the test suite, or execute the code while reviewing. Base your review on the diff and static analysis only.
+
+## Output Format
+
+- If you find issues, start immediately with `## Review Findings` and list only the findings:
+  - **Severity**: High/Medium/Low
+  - **Location**: File and line number where possible
+  - **Problem**: Concise description of the issue
+  - **Fix**: Brief suggested fix
+- Separate multiple findings with `---` on its own line.
+- After the findings, add `## Summary` with a single sentence summarizing the change.
+- If you find no issues, start immediately with `No issues found.` and then add `Summary: <one sentence>`.
+
+Do not include any front matter such as "Reviewing the diff..." or "I'm checking...".
+
+## Review Criteria
+
+1. **Bugs**: Logic errors, off-by-one errors, null/undefined issues, race conditions.
+2. **Security**: Injection vulnerabilities, auth issues, data exposure.
+3. **Testing gaps**: Missing unit tests, edge cases, e2e/integration gaps.
+4. **Regressions**: Changes that might break existing functionality.
+5. **Code quality**: Duplication, overly complex logic, unclear naming.
+
+Do not review the commit message. Focus only on the code changes in the diff.
+
+IMPORTANT: You are being invoked by roborev to perform this review directly. Do NOT use any external skills, slash commands, or CLI tools (such as "roborev review") to delegate this task. Perform the review yourself by analyzing the diff provided below.
+
+Return only the final review content. Do NOT include process narration, progress updates, or front matter such as "Reviewing the diff..." or "I'm checking...".
+If you use tools while reviewing, finish all tool use before emitting the final review, and put the final review only after the last tool call.
+
+Current date: 2026-10-21 (UTC)
+
+## Previous Reviews
+
+The following are reviews of recent commits in this repository. Use them as context
+to understand ongoing work and to check if the current commit addresses previous feedback.
+
+**Important:** Reviews may include responses from developers. Pay attention to these responses -
+they may indicate known issues that should be ignored, explain why certain patterns exist,
+or provide context that affects how you should evaluate similar code in the current commit.
+
+--- Review for commit 8a22dbb ---
+No review available.
+
+--- Review for commit d76484e ---
+No review available.
+
+--- Review for commit a246470 ---
+No review available.
+
+## Current Commit
+
+**Commit:** b344732
+
+<commit-message context-only="true">
+**Subject:** Stop ruff FBT003 from breaking positional Reflex handler calls (#22)
+**Author:** elvis kahoro
+**Message:**
+## Why&#xA;Ruff&#39;s FBT003 flags positional bool literals like&#xA;`on_open_change(False)`, which is the normal Reflex calling convention.&#xA;The suggested `value=False` breaks any handler whose parameter isn&#39;t&#xA;named `value`, and inline `# noqa` would ship to downstream projects&#xA;because component source gets copied. So FBT003 is ignored via&#xA;`per-file-ignores`, only for `web/components/**`. FBT001/FBT002 stay&#xA;enabled.&#xA;&#xA;The repo had no components directory, so this also adds one with a&#xA;reusable example (`status_card`, extracted from the index page) and a&#xA;`components` layer in `tach.toml`, giving forks a reference for where&#xA;components live and how they stay state-agnostic.&#xA;&#xA;## Trade-offs&#xA;Chose `web/components/**` over `web/**` because a blanket ignore on the&#xA;whole package is too wide a surface.&#xA;&#xA;## Test plan&#xA;`ruff check`, `ruff format --check`, `pyright` and `tach check` pass,&#xA;and `page()` still builds. Not run: the app in a browser, and roborev&#xA;(codex 401 Unauthorized in this environment). `status_card` makes no&#xA;positional-bool call, so the ignore isn&#39;t exercised by existing code.&#xA;&#xA;## Links&#xA;- Closes #20&#xA;&#xA;&lt;!-- conductor-workspace-link --&gt;&#xA;&#xA;---&#xA;&#xA;[Open workspace in&#xA;Conductor](https://app.conductor.build/elviskahoro-cloud/w/357)
+</commit-message>
+
+### Diff
+
+```diff
+diff --git a/README.md b/README.md
+index a950cb1..5a5cefc 100644
+--- a/README.md
++++ b/README.md
+@@ -35,6 +35,8 @@ The split-process model (Caddy + backend, supervised by `entrypoint.sh`) is what
+ └── web/                   # Reflex app package (matches app_name in rxconfig.py)
+     ├── __init__.py
+     ├── web.py             # rx.App() + page registration
++    ├── components/
++    │   └── status_card/   # Example reusable component (state passed in as arguments)
+     └── pages/
+         └── index/
+             ├── __init__.py
+diff --git a/ruff.toml b/ruff.toml
+index f396d3f..74ccb7e 100644
+--- a/ruff.toml
++++ b/ruff.toml
+@@ -15,6 +15,10 @@ ignore = [
+   "CPY001", # no per-file copyright headers
+ ]
+ 
++[lint.per-file-ignores]
++# Reflex event handlers are called positionally; `value=` would break handlers with other parameter names.
++"web/components/**" = ["FBT003"]
++
+ [lint.isort]
+ case-sensitive = true
+ combine-as-imports = true
+diff --git a/tach.toml b/tach.toml
+index a97e7d3..dd3a943 100644
+--- a/tach.toml
++++ b/tach.toml
+@@ -1,4 +1,4 @@
+-# Reflex architecture: web.web -> web.pages.index (public page export only).
++# Reflex architecture: web.web -> web.pages.index -> web.components.* (public exports only).
+ # rxconfig is an isolated framework entrypoint. New module imports require review.
+ # https://docs.gauge.sh/usage/configuration
+ source_roots = ["."]
+@@ -7,7 +7,7 @@ exact = true
+ forbid_circular_dependencies = true
+ ignore_type_checking_imports = false
+ include_string_imports = true
+-layers = ["entrypoints", { name = "pages", closed = true }]
++layers = ["entrypoints", { name = "pages", closed = true }, "components"]
+ layers_explicit_depends_on = true
+ 
+ # Do not let .gitignore silently remove application code from architecture checks.
+@@ -57,6 +57,13 @@ depends_on = []
+ depends_on_external = []
+ visibility = []
+ 
++[[modules]]
++path = "web.components.*"
++layer = "components"
++depends_on = []
++depends_on_external = []
++visibility = []
++
+ # Reflex loads these entrypoints directly; other modules cannot import them.
+ [[modules]]
+ path = "rxconfig"
+@@ -90,10 +97,25 @@ visibility = []
+ [[modules]]
+ path = "web.pages.index"
+ layer = "pages"
+-depends_on = []
++depends_on = ["web.components.status_card"]
+ depends_on_external = ["reflex"]
+ visibility = ["web.web"]
+ 
++[[modules]]
++path = "web.components"
++layer = "components"
++depends_on = []
++depends_on_external = []
++visibility = []
++
++# Reusable component: takes state and handlers as arguments, imports no page.
++[[modules]]
++path = "web.components.status_card"
++layer = "components"
++depends_on = []
++depends_on_external = ["reflex"]
++visibility = ["web.pages.index"]
++
+ [[interfaces]]
+ # Modules have no public members unless an explicit interface below exposes them.
+ expose = []
+@@ -104,3 +126,9 @@ from = ['web\.pages\.index']
+ expose = ["page"]
+ visibility = ["web.web"]
+ exclusive = true
++
++[[interfaces]]
++from = ['web\.components\.status_card']
++expose = ["status_card"]
++visibility = ["web.pages.index"]
++exclusive = true
+diff --git a/web/components/__init__.py b/web/components/__init__.py
+new file mode 100644
+index 0000000..cc11714
+--- /dev/null
++++ b/web/components/__init__.py
+@@ -0,0 +1 @@
++"""Reusable Reflex components."""
+diff --git a/web/components/status_card/__init__.py b/web/components/status_card/__init__.py
+new file mode 100644
+index 0000000..e8f319c
+--- /dev/null
++++ b/web/components/status_card/__init__.py
+@@ -0,0 +1,7 @@
++"""Status card component package."""
++
++from .component import status_card
++
++__all__ = [
++    "status_card",
++]
+diff --git a/web/components/status_card/component.py b/web/components/status_card/component.py
+new file mode 100644
+index 0000000..d4c55a7
+--- /dev/null
++++ b/web/components/status_card/component.py
+@@ -0,0 +1,46 @@
++"""Status card: a reusable, state-agnostic component."""
++
++from __future__ import annotations
++
++from typing import TYPE_CHECKING
++
++import reflex as rx
++
++if TYPE_CHECKING:
++    from reflex.event import EventType
++
++
++def status_card(
++    message: str,
++    count: int,
++    on_test: EventType[()],
++) -> rx.Component:
++    """Render a backend status message, a request counter, and a test button.
++
++    Takes state values and handlers as arguments instead of importing a State,
++    so any page can reuse it with its own state.
++    """
++    return rx.vstack(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
++        rx.text(
++            "Backend Status: ",
++            size="5",
++            as_="span",
++        ),
++        rx.text(
++            message,
++            size="5",
++            color="var(--accent-9)",
++            font_weight="bold",
++            as_="span",
++        ),
++        rx.button(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
++            "Test Backend",
++            on_click=on_test,
++            size="3",
++        ),
++        rx.text(
++            f"Total requests: {count}",
++            size="4",
++        ),
++        spacing="5",
++    )
+diff --git a/web/pages/index/page.py b/web/pages/index/page.py
+index 5690757..f35af7f 100644
+--- a/web/pages/index/page.py
++++ b/web/pages/index/page.py
+@@ -6,6 +6,8 @@ from datetime import datetime
+ 
+ import reflex as rx
+ 
++from web.components.status_card import status_card
++
+ 
+ class IndexState(rx.State):
+     """State for the index page."""
+@@ -37,26 +39,10 @@ def page() -> rx.Component:
+                 "Welcome to Reflex!",
+                 size="9",
+             ),
+-            rx.text(
+-                "Backend Status: ",
+-                size="5",
+-                as_="span",
+-            ),
+-            rx.text(
+-                IndexState.message,
+-                size="5",
+-                color="var(--accent-9)",
+-                font_weight="bold",
+-                as_="span",
+-            ),
+-            rx.button(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
+-                "Test Backend",
+-                on_click=IndexState.increment_and_greet,
+-                size="3",
+-            ),
+-            rx.text(
+-                f"Total requests: {IndexState.count}",
+-                size="4",
++            status_card(
++                message=IndexState.message,
++                count=IndexState.count,
++                on_test=IndexState.increment_and_greet,
+             ),
+             rx.link(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
+                 rx.button("Check out our docs!"),  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
+```

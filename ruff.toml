@@ -15,6 +15,10 @@ ignore = [
   "CPY001", # no per-file copyright headers
 ]
 
+[lint.per-file-ignores]
+# Reflex event handlers are called positionally; `value=` would break handlers with other parameter names.
+"web/components/**" = ["FBT003"]
+
 [lint.isort]
 case-sensitive = true
 combine-as-imports = true

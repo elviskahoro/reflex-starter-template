@@ -1,4 +1,4 @@
-# Reflex architecture: web.web -> web.pages.index (public page export only).
+# Reflex architecture: web.web -> web.pages.index -> web.components.* (public exports only).
 # rxconfig is an isolated framework entrypoint. New module imports require review.
 # https://docs.gauge.sh/usage/configuration
 source_roots = ["."]
@@ -7,7 +7,7 @@ exact = true
 forbid_circular_dependencies = true
 ignore_type_checking_imports = false
 include_string_imports = true
-layers = ["entrypoints", { name = "pages", closed = true }]
+layers = ["entrypoints", { name = "pages", closed = true }, "components"]
 layers_explicit_depends_on = true
 
 # Do not let .gitignore silently remove application code from architecture checks.
@@ -57,6 +57,13 @@ depends_on = []
 depends_on_external = []
 visibility = []
 
+[[modules]]
+path = "web.components.*"
+layer = "components"
+depends_on = []
+depends_on_external = []
+visibility = []
+
 # Reflex loads these entrypoints directly; other modules cannot import them.
 [[modules]]
 path = "rxconfig"
@@ -90,9 +97,24 @@ visibility = []
 [[modules]]
 path = "web.pages.index"
 layer = "pages"
-depends_on = []
+depends_on = ["web.components.status_card"]
 depends_on_external = ["reflex"]
 visibility = ["web.web"]
+
+[[modules]]
+path = "web.components"
+layer = "components"
+depends_on = []
+depends_on_external = []
+visibility = []
+
+# Reusable component: takes state and handlers as arguments, imports no page.
+[[modules]]
+path = "web.components.status_card"
+layer = "components"
+depends_on = []
+depends_on_external = ["reflex"]
+visibility = ["web.pages.index"]
 
 [[interfaces]]
 # Modules have no public members unless an explicit interface below exposes them.
@@ -103,4 +125,10 @@ expose = []
 from = ['web\.pages\.index']
 expose = ["page"]
 visibility = ["web.web"]
+exclusive = true
+
+[[interfaces]]
+from = ['web\.components\.status_card']
+expose = ["status_card"]
+visibility = ["web.pages.index"]
 exclusive = true

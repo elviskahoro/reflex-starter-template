@@ -35,6 +35,8 @@ The split-process model (Caddy + backend, supervised by `entrypoint.sh`) is what
 └── web/                   # Reflex app package (matches app_name in rxconfig.py)
     ├── __init__.py
     ├── web.py             # rx.App() + page registration
+    ├── components/
+    │   └── status_card/   # Example reusable component (state passed in as arguments)
     └── pages/
         └── index/
             ├── __init__.py

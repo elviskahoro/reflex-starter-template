@@ -6,6 +6,8 @@ from datetime import datetime
 
 import reflex as rx
 
+from web.components.status_card import status_card
+
 
 class IndexState(rx.State):
     """State for the index page."""
@@ -37,26 +39,10 @@ def page() -> rx.Component:
                 "Welcome to Reflex!",
                 size="9",
             ),
-            rx.text(
-                "Backend Status: ",
-                size="5",
-                as_="span",
-            ),
-            rx.text(
-                IndexState.message,
-                size="5",
-                color="var(--accent-9)",
-                font_weight="bold",
-                as_="span",
-            ),
-            rx.button(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
-                "Test Backend",
-                on_click=IndexState.increment_and_greet,
-                size="3",
-            ),
-            rx.text(
-                f"Total requests: {IndexState.count}",
-                size="4",
+            status_card(
+                message=IndexState.message,
+                count=IndexState.count,
+                on_test=IndexState.increment_and_greet,
             ),
             rx.link(  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown
                 rx.button("Check out our docs!"),  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown

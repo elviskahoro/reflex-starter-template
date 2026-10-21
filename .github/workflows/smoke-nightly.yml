@@ -1,0 +1,117 @@
+# Nightly smoke schedule: re-runs the `Tests` and `Reflex build`
+# required-status gates on a fixed cadence so silent regressions on
+# stale code surface as a red nightly instead of green-then-red on
+# the next PR. Runs against the current `HEAD` of `main` (no PR
+# context), posting check-runs with the same names as the PR gates.
+#
+# The `Trunk Check` job is intentionally NOT in the schedule for
+# hygiene reasons: it would run `check-mode: all` and count every
+# pre-existing finding on main as NEW. Until the repo's lint hygiene
+# converges (every rule that fires on first run fires again here),
+# the nightly trunk job would go red on the first minute and
+# desensitize the team to its signal. To enable it as a scheduled
+# run, replace the `if:` gate below with `github.event_name !=
+# 'pull_request'` or remove it; `workflow_dispatch` already lets you
+# fire the trunk job on demand to inspect current hygiene.
+#
+# This is a deliberate minutes-burner: the cost is bounded (~6 minutes
+# per morning on the trunk-io reference time), and silent-rot detection
+# is the explicit return. Skip the schedule if your repo can't afford
+# it; disable via repo settings -> Actions page if needed.
+name: Nightly smoke
+
+concurrency:
+  # A nightly that lingers across schedules is a noisy waste of minutes;
+  # cancel any running overnight run when the next morning's fires.
+  # `event-name` keeps scheduled and manual runs on separate groups
+  # so a `workflow_dispatch` doesn't cancel a scheduled run in flight
+  # (and vice versa). Scheduled runs are cheaply refreshable; only
+  # the one in flight should be canceled, not a manual ad-hoc audit.
+  group: nightly-smoke-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'schedule' }}
+
+on:
+  schedule:
+    # 06:30 UTC -- after the GitHub Actions free-tier reset but before
+    # the workday opens in most timezones. The exact minute (30) offsets
+    # from peak cron congestion.
+    - cron: "30 6 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trunk-check:
+    # Maintenance-only: gate the trunk job to manual triggers until
+    # the repo's lint hygiene converges. See the workflow-level
+    # comment above for why this isn't in the cron schedule.
+    name: Trunk Check
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out (full depth so trunk can resolve the upstream base)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Install dependencies
+        run: uv sync --frozen --group dev
+
+      # Same launcher as the PR gate; `check-mode: all` surfaces every
+      # finding on main rather than just NEW ones. Run this manually
+      # via the Actions tab to audit current hygiene.
+      - name: Trunk Check (full repo scope)
+        uses: trunk-io/trunk-action@e1234e67a86010d61ddac8d8ebf4b783e2ffd2fa # v2.0.0
+        with:
+          check-mode: all
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Install dependencies
+        run: uv sync --frozen --group dev
+
+      - name: Run tests
+        run: uv run pytest -q
+
+  reflex-build:
+    name: Reflex build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      # nightly uses the dev group because `reflex init` historically
+      # needs pyrefly/pyright on first run for type-checking; matches the
+      # PR-gate install pattern. The export step itself only touches
+      # `[project].dependencies`.
+      - name: Install dependencies
+        run: uv sync --frozen --group dev
+
+      # Cold build (no `actions/cache`) -- cache hits would mask
+      # bun/JS-toolchain rot. Each nightly pays the init download cost
+      # in exchange for a clean signal.
+      - name: Export frontend
+        run: |
+          uv run reflex init
+          uv run reflex export --frontend-only
+        env:
+          REFLEX_ENV: prod
+          PYTHONUNBUFFERED: "1"

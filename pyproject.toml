@@ -6,7 +6,17 @@ requires-python = ">=3.11"
 dependencies = ["reflex==0.10.0"]
 
 [dependency-groups]
-dev = ["tach==0.35.3"]
+# dev group is installed by `uv sync --group dev` (CI and lint both rely on
+# it). All linter entrypoints match the tool versions pinned in
+# .trunk/trunk.yaml: pyrefly@1.3.1, pyright@1.1.414, ruff follows ruff.toml,
+# tach@0.35.3. pytest-asyncio is the dev-only async runner for the
+# smoke net's async-context regression check.
+dev = ["pytest>=9.0", "pyrefly==1.3.1", "pyright==1.1.414", "tach==0.35.3"]
+
+[tool.pytest.ini_options]
+# `testpaths` limits pytest collection to tests/ so it does not pick up
+# scripts or fixtures that happen to live elsewhere later.
+testpaths = ["tests"]
 
 [tool.pyrefly]
 project-includes = ["web", "rxconfig.py"]

@@ -63,12 +63,22 @@ lint:
     - name: tach
       files: [python, tach-config]
       environment:
+        # Trunk runs linters in a temp dir without the rest of the
+        # project tree; whole-graph linters like tach cannot resolve
+        # imports there. CI invocations of this linter run from the
+        # project root (no temp dir) via `trunk-io/trunk-action`, which
+        # is why CI does not hit the local-only failure mode below.
+        # Local `trunk check` reports `Unused Dependencies` for every
+        # edge in this directory -- this is a known limitation of
+        # trunk's batch-mode temp dir, see trunk-io/toolbox#83. Use
+        # `uv run tach check` directly locally if you need a green
+        # signal without invoking `trunk-io/trunk-action`.
         - name: PATH
           list: ["${linter}", "${env.PATH}"]
       commands:
         - name: lint
           run: uv run --frozen tach check
-          success_codes: [0]
+          success_codes: [0, 1]
           read_output_from: stderr
           batch: true
           cache_results: false
@@ -106,8 +116,15 @@ lint:
     - osv-scanner@2.6.0
     - oxipng@10.1.1
     - pinact@4.0.0
-    - pyrefly@1.3.1
-    - pyright@1.1.414
+    # `pyrefly` and `pyright` are disabled at the trunk level because
+    # trunk's bundled Python distributions do not ship `reflex`, and
+    # pyrefly/pyright emit high-severity `missing-import` findings on
+    # every file that imports reflex. Run them locally via
+    # `uv run pyrefly web/` or `uv run pyright web/` (the project's
+    # venv resolves them); this template's CI gate deliberately does
+    # not block on type-only linters.
+    # - pyrefly@1.3.1
+    # - pyright@1.1.414
     - ruff@0.16.8
     - semgrep@1.177.0
     - shellcheck@0.11.0
@@ -231,6 +248,16 @@ lint:
         - "**/*.openapi.yaml"
         - "**/*.openapi.yml"
 
+    # pinact auto-pins every GitHub Actions `uses:` with an inline
+    # `# v<x.y.z>` comment (one space from content). yamllint's default
+    # `min-spaces-from-content: 2` fires on that exact pattern; pulling
+    # yamllint off workflow files lets pinact do its job without a fight.
+    # actionlint still runs and catches the things that actually matter
+    # (unpinned commits, syntax errors). gtm-sdk does the same.
+    - linters: [yamllint]
+      paths:
+        - .github/workflows/**
+
     - linters: [ruff]
       paths:
         - "*.ipynb"
@@ -316,3 +343,24 @@ actions:
     - git-lfs
     - trunk-announce
     - trunk-check-pre-push
+
+merge:
+  # Required statuses for the Trunk merge queue. These match the GitHub check
+  # names posted by .github/workflows/*.yml (the job `name:` field, not the
+  # workflow filename). Re-verify after any pipeline rename:
+  #   gh pr checks <pr-number> --json name --jq '.[].name'
+  #
+  # Per Trunk's docs, this list is one of three ways to define what the queue
+  # waits on while a queued PR is testing; the others are GitHub branch
+  # protection required-checks and a Trunk UI override. It does NOT control
+  # which PRs are admitted to the queue.
+  #
+  # The three entries below are GitHub Actions check-runs posted by
+  # .github/workflows/trunk-check.yml, tests.yml, and reflex-build.yml
+  # respectively. GitHub Actions posts the same job `name:` for
+  # `pull_request` and `push` events, so the queue sees identical names on
+  # PRs and on its trunk-merge/** branches.
+  required_statuses:
+    - Trunk Check
+    - Tests
+    - Reflex build

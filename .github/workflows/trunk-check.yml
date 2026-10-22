@@ -1,0 +1,76 @@
+# Lint gate for the Trunk merge queue (see .trunk/trunk.yaml: merge.required_statuses).
+#
+# Trunk only fails on NEW issues (findings introduced relative to the
+# upstream base), so any pre-existing findings on main do not block PRs;
+# a PR passes by not making lint worse. The official `trunk-io/trunk-action`
+# handles the launcher download, project setup, and `--upstream` resolution
+# for both pull_request and trunk-merge/** (merge queue) events. We pin
+# the action by SHA to fail closed on any upstream change.
+#
+# Trigger notes:
+# - pull_request on main gates ordinary PRs against the merge ref's first
+#   parent (HEAD^1): the exact, fresh main tip GitHub used to build
+#   refs/pull/N/merge. github.event.pull_request.base.sha must NOT be used
+#   here -- the action does the right thing on its own.
+# - push on trunk-merge/** is the Trunk merge queue testing a PR stack as if
+#   it had already merged; HEAD^1 is the main tip the queue branch was
+#   stacked on.
+# - There is deliberately no push-to-main lint run: on a push to main, HEAD
+#   equals origin/main, so any upstream diff would be HEAD against itself
+#   and could never fail. Direct pushes are blocked by branch protection
+#   once the queue is enabled.
+#
+# Pyrefly/pyright are disabled in `.trunk/trunk.yaml` because trunk's
+# bundled Python distributions don't ship `reflex`, and pyrefly/pyright
+# silently fail when `import reflex` is unresolved. `uv sync --group dev`
+# below installs them into the project venv where the types ARE
+# resolved; run them locally via `uv run pyrefly` / `uv run pyright` if
+# you want full type checks.
+name: Trunk Check
+
+concurrency:
+  group: trunk-check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+on:
+  push:
+    branches:
+      - trunk-merge/**
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  trunk-check:
+    # Must match .trunk/trunk.yaml merge.required_statuses.
+    name: Trunk Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      # `trunk-io/trunk-action` posts per-finding annotations back to the
+      # PR. The required-status gate still passes without this, but
+      # reviewers lose the in-PR inline hints.
+      checks: write
+    steps:
+      - name: Check out (full depth so trunk can resolve the upstream base)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      # uv needs to be on `trunk`'s PATH for the `uv run --frozen tach
+      # check` override in `.trunk/trunk.yaml` to work. `setup-uv` exports
+      # its install location via GITHUB_PATH, which action steps inherit.
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      # Project deps land in `.venv` so a future `trunk-cache-prime` or
+      # downstream job can pick them up.
+      - name: Install dependencies
+        run: uv sync --frozen --group dev
+
+      - name: Trunk Check
+        uses: trunk-io/trunk-action@e1234e67a86010d61ddac8d8ebf4b783e2ffd2fa # v2.0.0

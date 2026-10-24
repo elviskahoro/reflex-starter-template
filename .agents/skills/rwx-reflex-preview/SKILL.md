@@ -10,12 +10,14 @@ https://www.rwx.com/blog/preview-your-web-apps-with-rwx. Stick to the docs and
 `rwx <cmd> --help`; don't guess at syntax.
 
 ## Layout
+
 Tasks: `code` (git/clone) -> `system-deps` (caddy, uv) -> `build`
 (`uv sync`, `reflex export --frontend-only`, unzip to `/srv`) -> `preview`
 (`app:` task, port 3000, runs backend on :8000 + Caddy via the repo Caddyfile)
 -> `share-link` (prints `tasks.preview.app.url`).
 
 ## Commands
+
 - Validate: `rwx lint .rwx/preview.yml` (also flags outdated package versions)
 - Test: `rwx run .rwx/preview.yml --init pull-request-number=0 --wait`
   (a local run has no PR number, so `init.pull-request-number` must be passed)
@@ -24,6 +26,7 @@ Tasks: `code` (git/clone) -> `system-deps` (caddy, uv) -> `build`
 - `rwx apps enable|disable <endpoint-or-url>`; `rwx runs list|show`.
 
 ## Gotchas learned
+
 - `entrypoint.sh` hardcodes `/app/Caddyfile`; on RWX run the backend and
   `caddy run --config Caddyfile` directly with `PORT=3000`.
 - Apps are private by default. Per the docs: set `app.public: true`, use

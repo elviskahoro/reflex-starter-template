@@ -1,0 +1,49 @@
+# PULLFROG ACTION — DO NOT EDIT EXCEPT WHERE INDICATED
+name: Pullfrog
+run-name: ${{ inputs.name || github.workflow }}
+# trunk-ignore-begin(checkov/CKV_GHA_7): the prompt and name inputs are the
+# agent entry point, not build parameters. Pullfrog's `workflow_dispatch`
+# pattern requires user-provided prompts -- the check fires on workflow inputs
+# in general, but here every input is consumed inside the same workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        type: string
+        description: Agent prompt
+      name:
+        type: string
+        description: Run name
+# trunk-ignore-end(checkov/CKV_GHA_7)
+
+permissions:
+  contents: read
+
+jobs:
+  pullfrog:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      # Required for Pullfrog to post review verdicts back to the PR.
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+      - name: Run agent
+        uses: pullfrog/pullfrog@ad4283a862b8377cb525a0f5bf30f17c023b18ea # v0.1.98
+        with:
+          prompt: ${{ inputs.prompt }}
+          # Fireworks GLM 5.3 -- same model roborev uses in gtm-sdk
+          # (.roborev.toml: fireworks/accounts/fireworks/models/glm-5p3).
+          # Raw models.dev specifier; runs through OpenCode on BYOK.
+          model: fireworks-ai/accounts/fireworks/models/glm-5p3
+        env:
+          # Only the provider the agent actually targets is exposed. Other
+          # BYOK keys are kept in repo secrets for the cases where a future
+          # pullfrog run wants to swap models; passing them into this job
+          # widens the blast radius of a compromised action without adding
+          # capability.
+          FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}

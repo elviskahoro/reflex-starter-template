@@ -4,21 +4,16 @@ on:
       init:
         commit-sha: ${{ event.git.sha }}
         branch: ${{ event.git.branch }}
-        repository: https://github.com/Sanhedrin/reflex-starter-template.git
+        repository: https://github.com/elviskahoro/reflex-starter-template.git
         event-type: push
       if: ${{ event.git.branch == 'main' }}
-    schedule:
-      init:
-        commit-sha: main
-        branch: main
-        repository: https://github.com/Sanhedrin/reflex-starter-template.git
-        event-type: schedule
-        schedule-expression: "30 6 * * 1-5"
+    # Note: schedule trigger is configured in RWX Cloud, not here.
+    # This pipeline runs nightly at 06:30 UTC on weekdays.
   cli:
     init:
       commit-sha: ${{ event.git.sha }}
       branch: ${{ event.git.branch }}
-      repository: https://github.com/Sanhedrin/reflex-starter-template.git
+      repository: https://github.com/elviskahoro/reflex-starter-template.git
       event-type: push
       before-sha: ""
 
@@ -104,7 +99,6 @@ tasks:
 
   - key: trunk-check-all
     use: [trunk-install]
-    if: ${{ init.event-type == 'schedule' }}
     run: |
       set -euo pipefail
       trunk check --all --ci < /dev/null

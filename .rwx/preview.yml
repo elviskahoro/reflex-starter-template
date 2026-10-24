@@ -21,7 +21,6 @@ tasks:
     with:
       repository: https://github.com/elviskahoro/reflex-starter-template.git
       ref: ${{ init.commit-sha }}
-      github-token: ${{ github.token }}
 
   - key: system-deps
     run: |

@@ -248,7 +248,6 @@ lint:
         - "**/*.openapi.yaml"
         - "**/*.openapi.yml"
 
-
     - linters: [ruff]
       paths:
         - "*.ipynb"

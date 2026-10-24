@@ -7,8 +7,8 @@ on:
         repository: https://github.com/elviskahoro/reflex-starter-template.git
         event-type: push
       if: ${{ event.git.branch == 'main' }}
-    # Note: schedule trigger is configured in RWX Cloud, not here.
-    # This pipeline runs nightly at 06:30 UTC on weekdays.
+      # Note: schedule trigger is configured in RWX Cloud, not here.
+      # This pipeline runs nightly at 06:30 UTC on weekdays.
   cli:
     init:
       commit-sha: ${{ event.git.sha }}

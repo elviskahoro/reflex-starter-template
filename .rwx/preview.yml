@@ -1,0 +1,63 @@
+# PR preview environment on RWX: https://www.rwx.com/blog/preview-your-web-apps-with-rwx
+# Serves the exported frontend and Reflex backend through Caddy on port 3000,
+# mirroring the Dockerfile/entrypoint.sh production layout.
+on:
+  github:
+    pull_request:
+      init:
+        commit-sha: ${{ event.git.sha }}
+        pull-request-number: ${{ event.github.pull_request.number }}
+  cli:
+    init:
+      commit-sha: ${{ event.git.sha }}
+
+base:
+  image: ubuntu:24.04
+  config: rwx/base 1.0.0
+
+tasks:
+  - key: code
+    call: git/clone 2.2.0
+    with:
+      repository: https://github.com/elviskahoro/reflex-starter-template.git
+      ref: ${{ init.commit-sha }}
+
+  - key: system-deps
+    run: |
+      sudo apt-get update
+      sudo apt-get install -y --no-install-recommends caddy unzip curl
+      curl -LsSf https://astral.sh/uv/install.sh | sh
+      echo "$HOME/.local/bin" >> "$RWX_ENV/PATH"
+
+  - key: build
+    use: [code, system-deps]
+    run: |
+      uv sync --frozen --no-dev
+      .venv/bin/reflex init
+      .venv/bin/reflex export --frontend-only
+      sudo mkdir -p /srv
+      sudo unzip -q frontend.zip -d /srv
+      rm frontend.zip
+      # The export bakes in http://localhost:8000; point it at the page origin
+      # instead (Caddy proxies /_event and /_upload to the backend).
+      f=$(grep -rl 'localhost:8000' /srv/assets | head -1)
+      printf '%s\n' \
+        'const o=location.origin,w=o.replace(/^http/,"ws");' \
+        'var e={PING:o+"/ping",EVENT:w+"/_event",UPLOAD:o+"/_upload",AUTH_CODESPACE:o+"/auth-codespace",HEALTH:o+"/_health",ALL_ROUTES:o+"/_all_routes",TRANSPORT:"websocket",TEST_MODE:!1};export{e as t};' \
+        | sudo tee "$f" > /dev/null
+
+  - key: preview
+    use: [build]
+    app:
+      endpoint: pr-${{ init.pull-request-number }}
+      port: 3000
+    run: |
+      export PORT=3000 REFLEX_ENV=prod
+      .venv/bin/reflex run --env prod --backend-only --backend-port 8000 &
+      exec caddy run --config Caddyfile --adapter caddyfile
+
+  - key: share-link
+    use: [preview]
+    run: echo "$PREVIEW_URL"
+    env:
+      PREVIEW_URL: ${{ tasks.preview.app.url }}

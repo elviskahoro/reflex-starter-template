@@ -248,15 +248,6 @@ lint:
         - "**/*.openapi.yaml"
         - "**/*.openapi.yml"
 
-    # pinact auto-pins every GitHub Actions `uses:` with an inline
-    # `# v<x.y.z>` comment (one space from content). yamllint's default
-    # `min-spaces-from-content: 2` fires on that exact pattern; pulling
-    # yamllint off workflow files lets pinact do its job without a fight.
-    # actionlint still runs and catches the things that actually matter
-    # (unpinned commits, syntax errors). gtm-sdk does the same.
-    - linters: [yamllint]
-      paths:
-        - .github/workflows/**
 
     - linters: [ruff]
       paths:
@@ -345,22 +336,21 @@ actions:
     - trunk-check-pre-push
 
 merge:
-  # Required statuses for the Trunk merge queue. These match the GitHub check
-  # names posted by .github/workflows/*.yml (the job `name:` field, not the
-  # workflow filename). Re-verify after any pipeline rename:
-  #   gh pr checks <pr-number> --json name --jq '.[].name'
+  # Required statuses for the Trunk merge queue. These match the RWX pipeline
+  # task `key:` names (not the pipeline filenames). Re-verify after any
+  # pipeline rename by checking what status checks are created in Conductor.
   #
   # Per Trunk's docs, this list is one of three ways to define what the queue
   # waits on while a queued PR is testing; the others are GitHub branch
   # protection required-checks and a Trunk UI override. It does NOT control
   # which PRs are admitted to the queue.
   #
-  # The three entries below are GitHub Actions check-runs posted by
-  # .github/workflows/trunk-check.yml, tests.yml, and reflex-build.yml
-  # respectively. GitHub Actions posts the same job `name:` for
-  # `pull_request` and `push` events, so the queue sees identical names on
-  # PRs and on its trunk-merge/** branches.
+  # The three entries below correspond to RWX pipeline tasks in .rwx/:
+  # - trunk-check-pr and trunk-check-push from .rwx/trunk-check.yml
+  # - pytest from .rwx/tests.yml
+  # - reflex-export from .rwx/reflex-build.yml
+  # RWX posts status checks with the pipeline key name.
   required_statuses:
-    - Trunk Check
-    - Tests
-    - Reflex build
+    - trunk-check-pr
+    - pytest
+    - reflex-export

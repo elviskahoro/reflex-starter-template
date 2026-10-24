@@ -1,0 +1,38 @@
+# RWX version of Pullfrog automation. Triggers via `rwx run` with prompt input.
+# Since RWX doesn't have native pullfrog action, this would need to integrate
+# with your CI system via webhook or be manually dispatched.
+on:
+  cli:
+    init:
+      commit-sha: ${{ event.git.sha }}
+      branch: ${{ event.git.branch }}
+      repository: https://github.com/Sanhedrin/reflex-starter-template.git
+      prompt: ${{ event.prompt }}
+
+base:
+  image: ubuntu:24.04
+  config: rwx/base 1.2.0
+
+tasks:
+  - key: code
+    call: git/clone 2.2.0
+    with:
+      repository: ${{ init.repository }}
+      ref: ${{ init.commit-sha }}
+      fetch-full-depth: true
+
+  - key: agent-run
+    use: [code]
+    run: |
+      set -euo pipefail
+      # This task demonstrates how you might integrate with an external agent API.
+      # For now, it echoes the prompt that was provided.
+      # In production, you would call an API to trigger the agent with this prompt.
+      echo "Pullfrog agent would receive prompt:"
+      echo "$PROMPT"
+      # TODO: Call actual agent API here
+      # curl -X POST https://your-agent-api/execute \
+      #   -H "Authorization: Bearer $AGENT_TOKEN" \
+      #   -d "{\"prompt\": \"$PROMPT\"}"
+    env:
+      PROMPT: ${{ init.prompt }}

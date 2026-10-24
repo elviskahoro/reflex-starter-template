@@ -5,7 +5,7 @@ on:
   github:
     pull_request:
       init:
-        commit-sha: ${{ event.github.pull_request.head.sha }}
+        commit-sha: ${{ event.git.sha }}
         pull-request-number: ${{ event.github.pull_request.number }}
   cli:
     init:

@@ -4,14 +4,14 @@ on:
       init:
         commit-sha: ${{ event.git.sha }}
         branch: ${{ event.git.branch }}
-        repository: https://github.com/Sanhedrin/reflex-starter-template.git
+        repository: https://github.com/elviskahoro/reflex-starter-template.git
         event-type: push
         before-sha: ${{ event.github.push.before }}
       if: ${{ event.git.branch == 'main' || event.git.branch == 'trunk-merge/**' }}
     pull_request:
       init:
         commit-sha: ${{ event.git.sha }}
-        repository: https://github.com/Sanhedrin/reflex-starter-template.git
+        repository: https://github.com/elviskahoro/reflex-starter-template.git
         event-type: pull_request
         base-sha: ${{ event.github.pull_request.pull_request.base.sha }}
       if: ${{ event.github.pull_request.pull_request.base.ref == 'main' }}
@@ -19,7 +19,7 @@ on:
     init:
       commit-sha: ${{ event.git.sha }}
       branch: ${{ event.git.branch }}
-      repository: https://github.com/Sanhedrin/reflex-starter-template.git
+      repository: https://github.com/elviskahoro/reflex-starter-template.git
       event-type: push
       before-sha: ""
 

@@ -22,6 +22,7 @@ uv sync --group dev          # install locked deps into .venv
 uv run pytest -q             # smoke tests (`network`-marked tests deselected)
 uv run tach check            # module boundaries
 uv run tach check-external   # declared vs imported dependencies
+uv run python scripts/check_frontend.py  # JS deps vs reflex.lock (needs bun; ~1 min)
 trunk check --all            # lint (run uv sync first: pyright/pyrefly use .venv)
 ```
 

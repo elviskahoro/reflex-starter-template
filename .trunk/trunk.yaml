@@ -363,9 +363,15 @@ actions:
     - trunk-check-pre-push
 
 merge:
-  # Required statuses for the Trunk merge queue. These match the RWX pipeline
-  # task `key:` names (not the pipeline filenames). Re-verify after any
-  # pipeline rename by checking what status checks are created in Conductor.
+  # Required statuses for the Trunk merge queue. Entries must be the exact
+  # status-check names GitHub sees, including RWX's "RWX: " prefix. The names
+  # below are backed by the custom per-trigger status-checks blocks in the
+  # .rwx/ pipelines: each posts the same name from both the pull_request and
+  # push triggers, so PR heads and trunk-merge/** batch refs report identical
+  # contexts (RWX's default per-run status renames itself after the trigger
+  # and so cannot be required). Re-verify after any pipeline or trigger
+  # rename by reading the contexts posted on a commit:
+  # api.github.com/repos/<owner>/<repo>/commits/<sha>/status.
   #
   # Per Trunk's docs, this list is one of three ways to define what the queue
   # waits on while a queued PR is testing; the others are GitHub branch
@@ -373,13 +379,14 @@ merge:
   # which PRs are admitted to the queue.
   #
   # The entries below correspond to RWX pipeline tasks in .rwx/:
-  # - trunk-check-pr and trunk-check-push from .rwx/trunk-check.yml
+  # - trunk-check (trunk-check-pr on pull requests, trunk-check-push on
+  #   pushes) and tach-external from .rwx/trunk-check.yml
   # - pytest from .rwx/tests.yml
   # - reflex-export from .rwx/reflex-build.yml
   # - frontend-deps from .rwx/frontend.yml
-  # RWX posts status checks with the pipeline key name.
   required_statuses:
-    - trunk-check-pr
-    - pytest
-    - reflex-export
-    - frontend-deps
+    - "RWX: trunk-check"
+    - "RWX: tach-external"
+    - "RWX: pytest"
+    - "RWX: reflex-export"
+    - "RWX: frontend-deps"

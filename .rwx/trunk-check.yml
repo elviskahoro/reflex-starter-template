@@ -8,6 +8,18 @@ on:
         event-type: push
         before-sha: ${{ event.github.push.before }}
       if: ${{ event.git.branch == 'main' || event.git.branch == 'trunk-merge/**' }}
+      # merge.required_statuses (.trunk/trunk.yaml) must match status checks
+      # that actually post. RWX's default per-run status is named after the
+      # run definition and trigger ("RWX: trunk-check.yml (push)" vs
+      # "(pull request)"), so it can never be required; the custom checks
+      # below post stable names on PR heads and trunk-merge/** batch refs
+      # alike. Task lists stay per-trigger: a task skipped on this trigger
+      # reports its custom check as failed.
+      status-checks:
+        - tasks: [trunk-check-push]
+          name: trunk-check
+        - tasks: [tach-external]
+          name: tach-external
     pull_request:
       init:
         commit-sha: ${{ event.git.sha }}
@@ -15,6 +27,13 @@ on:
         event-type: pull_request
         base-sha: ${{ event.github.pull_request.pull_request.base.sha }}
       if: ${{ event.github.pull_request.pull_request.base.ref == 'main' }}
+      # Same stable names as the push trigger above; the task list swaps in
+      # trunk-check-pr, the variant that runs on pull requests.
+      status-checks:
+        - tasks: [trunk-check-pr]
+          name: trunk-check
+        - tasks: [tach-external]
+          name: tach-external
   cli:
     init:
       commit-sha: ${{ event.git.sha }}

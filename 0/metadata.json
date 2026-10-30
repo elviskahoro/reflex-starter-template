@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M66VEZ5BWQFBDN0WX9PPZJMN",
+  "session_id": "b8af9b2c-f261-416a-9268-36dd976772a7",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-30T16:49:36.22344661Z",
+  "branch": "conductor/fireworks-provider-switch",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    ".github/workflows/pullfrog.yml"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "2facf413edc3",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 51484,
+    "cache_read_tokens": 271803,
+    "output_tokens": 2639,
+    "api_call_count": 8
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 1
+  }
+}

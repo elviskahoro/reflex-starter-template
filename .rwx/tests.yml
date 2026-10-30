@@ -8,6 +8,13 @@ on:
         event-type: push
         before-sha: ${{ event.github.push.before }}
       if: ${{ event.git.branch == 'main' || event.git.branch == 'trunk-merge/**' }}
+      # Custom status check so merge.required_statuses (.trunk/trunk.yaml)
+      # can require this task by a name that posts identically on PR heads
+      # and trunk-merge/** batch refs; the default per-run status renames
+      # itself per trigger. See .rwx/trunk-check.yml for the full rationale.
+      status-checks:
+        - tasks: [pytest]
+          name: pytest
     pull_request:
       init:
         commit-sha: ${{ event.git.sha }}
@@ -15,6 +22,10 @@ on:
         event-type: pull_request
         base-sha: ${{ event.github.pull_request.pull_request.base.sha }}
       if: ${{ event.github.pull_request.pull_request.base.ref == 'main' }}
+      # Same stable name as the push trigger above.
+      status-checks:
+        - tasks: [pytest]
+          name: pytest
   cli:
     init:
       commit-sha: ${{ event.git.sha }}

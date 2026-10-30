@@ -54,12 +54,12 @@ file_dependencies = [
   "reflex.lock/**",
 ]
 
-# Smoke tests run pytest, which is a dev-only dep. Telling tach to skip
-# external checking for pytest keeps `uv run tach check-external`
+# Smoke tests run pytest (and hypothesis for property tests), which are
+# dev-only deps. Telling tach to skip external checking for them keeps `uv run tach check-external`
 # aligned with what pyproject.toml actually declares (production deps
 # only) rather than forcing pytest into `[project].dependencies`.
 [external]
-exclude = ["pytest"]
+exclude = ["pytest", "hypothesis"]
 
 # Default-deny new packages instead of folding their imports into a parent module.
 # Single-level globs keep each page's implementation inside its package boundary.
@@ -181,7 +181,8 @@ exclusive = true
 # layers are open (see `layers` above). Production modules cannot
 # accidentally import `tests/` because its `visibility = []` excludes
 # everything from the production module graph. pytest is not in
-# `depends_on_external` because [external].exclude above covers it;
+# `depends_on_external` because [external].exclude above covers it
+# (likewise hypothesis);
 # reflex is listed because every reflex page factory invocation
 # imports it transitively.
 [[modules]]

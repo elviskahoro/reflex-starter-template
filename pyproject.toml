@@ -11,7 +11,13 @@ dependencies = ["reflex==0.10.0"]
 # .trunk/trunk.yaml: pyrefly@1.3.1, pyright@1.1.414, ruff follows ruff.toml,
 # tach@0.35.3. pytest-asyncio is the dev-only async runner for the
 # smoke net's async-context regression check.
-dev = ["pytest>=9.0", "pyrefly==1.3.1", "pyright==1.1.414", "tach==0.35.3"]
+dev = [
+  "hypothesis>=6.140.0",
+  "pytest>=9.0",
+  "pyrefly==1.3.1",
+  "pyright==1.1.414",
+  "tach==0.35.3",
+]
 
 [tool.pytest.ini_options]
 # `testpaths` limits pytest collection to tests/ so it does not pick up

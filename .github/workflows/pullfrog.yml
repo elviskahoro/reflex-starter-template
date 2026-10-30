@@ -36,14 +36,14 @@ jobs:
         uses: pullfrog/pullfrog@ad4283a862b8377cb525a0f5bf30f17c023b18ea # v0.1.98
         with:
           prompt: ${{ inputs.prompt }}
-          # GLM 5.3 Flash via OpenRouter -- same family roborev uses in gtm-sdk
+          # GLM 5.3 Flash via Fireworks -- same family roborev uses in gtm-sdk
           # (.roborev.toml: fireworks/accounts/fireworks/models/glm-5p3).
           # Raw models.dev specifier; runs through OpenCode on BYOK.
-          model: openrouter/z-ai/glm-5.3-flash
+          model: fireworks-ai/accounts/fireworks/models/glm-5p3-flash
         env:
           # Only the provider the agent actually targets is exposed. Other
           # BYOK keys are kept in repo secrets for the cases where a future
           # pullfrog run wants to swap models; passing them into this job
           # widens the blast radius of a compromised action without adding
           # capability.
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}

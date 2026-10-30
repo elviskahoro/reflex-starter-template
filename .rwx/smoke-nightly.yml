@@ -31,7 +31,6 @@ tasks:
       preserve-git-dir: true
 
   - key: uv-install
-    use: [code]
     run: |
       set -euo pipefail
       script="$(mktemp)"
@@ -42,25 +41,39 @@ tasks:
       echo "$HOME/.local/bin" >> $RWX_ENV/PATH
 
   - key: deps-dev
-    use: [uv-install]
+    use: [code, uv-install]
+    filter:
+      - pyproject.toml
+      - uv.lock
     run: |
       uv sync --frozen --group dev
       echo "$PWD/.venv/bin" >> $RWX_ENV/PATH
       echo "VIRTUAL_ENV=$PWD/.venv" >> $RWX_ENV/VIRTUAL_ENV
+    # Re-sync from PyPI at least weekly so a yanked or removed distribution
+    # still surfaces on the nightly even when the lockfiles are unchanged.
+    cache:
+      ttl: 7 days
 
   - key: deps-prod
-    use: [uv-install]
+    use: [code, uv-install]
+    filter:
+      - pyproject.toml
+      - uv.lock
     run: |
       uv sync --frozen
       echo "$PWD/.venv/bin" >> $RWX_ENV/PATH
       echo "VIRTUAL_ENV=$PWD/.venv" >> $RWX_ENV/VIRTUAL_ENV
+    # Re-sync from PyPI at least weekly so a yanked or removed distribution
+    # still surfaces on the nightly even when the lockfiles are unchanged.
+    cache:
+      ttl: 7 days
 
   - key: pytest
-    use: [deps-dev]
+    use: [code, deps-dev]
     run: uv run pytest -q
 
   - key: reflex-export
-    use: [deps-dev]
+    use: [code, deps-dev]
     run: |
       uv run reflex init
       uv run reflex export --frontend-only
@@ -69,7 +82,6 @@ tasks:
       PYTHONUNBUFFERED: "1"
 
   - key: trunk-install
-    use: [deps-dev]
     run: |
       set -euo pipefail
       trunk_version="1.25.0"
@@ -98,7 +110,7 @@ tasks:
       fi
 
   - key: trunk-check-all
-    use: [trunk-install]
+    use: [code, deps-dev, trunk-install]
     run: |
       set -euo pipefail
       trunk check --all --ci < /dev/null

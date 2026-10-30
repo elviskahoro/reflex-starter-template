@@ -28,11 +28,15 @@ def _config_files() -> list[Path]:
     return sorted(path for pattern in CONFIG_GLOBS for path in ROOT.glob(pattern))
 
 
-def _find_violations(path: Path, flags: tuple[str, ...] = BANNED_FLAGS) -> list[str]:
+def _find_violations(
+    path: Path,
+    flags: tuple[str, ...] = BANNED_FLAGS,
+    root: Path = ROOT,
+) -> list[str]:
     violations: list[str] = []
     for lineno, line in enumerate(path.read_text().splitlines(), start=1):
         violations.extend(
-            f"{path.relative_to(path.parent.parent)}:{lineno}: {flag}"
+            f"{path.relative_to(root)}:{lineno}: {flag}"
             for flag in flags
             if re.search(rf"{re.escape(flag)}(?![\w-])", line)
         )
@@ -43,7 +47,11 @@ def test_config_files_are_found() -> None:
     assert _config_files(), "no CI config matched; guard would be vacuous"
 
 
-@pytest.mark.parametrize("path", _config_files(), ids=lambda p: str(p.relative_to(ROOT)))
+@pytest.mark.parametrize(
+    "path",
+    _config_files(),
+    ids=lambda p: str(p.relative_to(ROOT)),
+)
 def test_no_bypass_flags(path: Path) -> None:
     assert not _find_violations(path)
 
@@ -52,4 +60,4 @@ def test_scanner_detects_bypass_flag(tmp_path: Path) -> None:
     cfg = tmp_path / "ci" / "x.yml"
     cfg.parent.mkdir()
     cfg.write_text("run: git commit --no-verify\nrun: git push --force-with-lease\n")
-    assert _find_violations(cfg) == ["ci/x.yml:1: --no-verify"]
+    assert _find_violations(cfg, root=tmp_path) == ["ci/x.yml:1: --no-verify"]

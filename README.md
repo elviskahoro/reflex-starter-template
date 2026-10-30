@@ -256,6 +256,7 @@ The Reflex package is `web/`. If renaming to e.g. `myapp`:
 | `reflex: command not found` in container | uv sync failed or `.venv/bin` not used | Confirm `uv sync --frozen --no-dev` succeeded in the build logs; entrypoint uses `.venv/bin/reflex` explicitly |
 | Submodule `symlink/` empty | Cloned without `--recurse-submodules` | `git submodule update --init --recursive` |
 | Watermark reappears | `rxconfig.py` was edited or overridden | Restore `show_built_with_reflex=False` |
+| `npm error code EOVERRIDE` when rebuilding `reflex.lock/` with npm | The `"vite": "8.3.5"` security override in `reflex.lock/package.json` conflicts with Reflex 0.10.0's re-pinned `devDependencies.vite` (`8.3.2`); npm, unlike bun, rejects an override that conflicts with a direct dependency | Stay on bun for frontend rebuilds (`bun install --frozen-lockfile` in `reflex.lock/`) until Reflex ships a vite pin of 8.3.5 or later; then drop the override |
 
 For a deeper dive into Railway-specific failure modes, see [`DEPLOYMENT.md`](./DEPLOYMENT.md).
 

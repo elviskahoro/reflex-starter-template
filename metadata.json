@@ -3,10 +3,13 @@
   "checkpoint_id": "01M66V4HPAR6S6N02M2MWQ88DJ",
   "strategy": "manual-commit",
   "branch": "conductor/linear-python-sdk",
-  "checkpoints_count": 1,
+  "checkpoints_count": 3,
   "files_touched": [
     ".roborev.toml",
-    "AGENTS.md"
+    ".rwx/trunk-check.yml",
+    "AGENTS.md",
+    "pyproject.toml",
+    "uv.lock"
   ],
   "sessions": [
     {
@@ -15,22 +18,29 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 16,
-    "cache_creation_tokens": 45502,
-    "cache_read_tokens": 306162,
-    "output_tokens": 5683,
-    "api_call_count": 9
+    "input_tokens": 54,
+    "cache_creation_tokens": 146292,
+    "cache_read_tokens": 1632516,
+    "output_tokens": 13938,
+    "api_call_count": 29
   },
   "redaction": {
-    "replacements": 0,
+    "replacements": 2,
     "layers": {
       "betterleaks": 0,
       "connection_string": 0,
       "credential_key": 0,
-      "credential_value": 0,
+      "credential_value": 2,
       "credentialed_uri": 0,
       "entropy": 0,
       "key_context": 0,

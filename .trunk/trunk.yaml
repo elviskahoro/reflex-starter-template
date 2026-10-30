@@ -344,12 +344,14 @@ merge:
   # protection required-checks and a Trunk UI override. It does NOT control
   # which PRs are admitted to the queue.
   #
-  # The three entries below correspond to RWX pipeline tasks in .rwx/:
+  # The entries below correspond to RWX pipeline tasks in .rwx/:
   # - trunk-check-pr and trunk-check-push from .rwx/trunk-check.yml
   # - pytest from .rwx/tests.yml
   # - reflex-export from .rwx/reflex-build.yml
+  # - frontend-deps from .rwx/frontend.yml
   # RWX posts status checks with the pipeline key name.
   required_statuses:
     - trunk-check-pr
     - pytest
     - reflex-export
+    - frontend-deps

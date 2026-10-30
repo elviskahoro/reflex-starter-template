@@ -105,7 +105,8 @@ path = "web.web"
 layer = "entrypoints"
 depends_on = ["web.pages.index"]
 depends_on_external = ["reflex"]
-visibility = []
+# `tests` imports the app to enumerate compiled page imports.
+visibility = ["tests"]
 
 [[modules]]
 path = "web.pages"
@@ -164,6 +165,12 @@ visibility = ["web.web", "tests"]
 exclusive = true
 
 [[interfaces]]
+from = ['web\.web']
+expose = ["app"]
+visibility = ["tests"]
+exclusive = true
+
+[[interfaces]]
 from = ['web\.components\.status_card']
 expose = ["status_card"]
 visibility = ["web.pages.index", "tests"]
@@ -180,6 +187,6 @@ exclusive = true
 [[modules]]
 path = "tests"
 layer = "entrypoints"
-depends_on = ["web.pages.index", "web.components.status_card"]
+depends_on = ["web.pages.index", "web.components.status_card", "web.web"]
 depends_on_external = ["reflex"]
 visibility = []

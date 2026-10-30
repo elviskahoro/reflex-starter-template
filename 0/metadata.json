@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M66V4HPAR6S6N02M2MWQ88DJ",
+  "session_id": "175e1692-3d48-44d5-adc1-ec0640f87bf5",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-30T16:43:54.09563515Z",
+  "branch": "conductor/linear-python-sdk",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    ".roborev.toml",
+    "AGENTS.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "827774a30c5d",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 45502,
+    "cache_read_tokens": 306162,
+    "output_tokens": 5683,
+    "api_call_count": 9
+  },
+  "redaction": {
+    "replacements": 0,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 0,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 1
+  }
+}

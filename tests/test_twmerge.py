@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from web.components.ui.core import cn
+from web.components.ui import cn
 
 
 def test_cn_wraps_clsx_in_twmerge() -> None:

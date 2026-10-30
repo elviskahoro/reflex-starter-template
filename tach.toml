@@ -146,6 +146,15 @@ depends_on_external = ["reflex"]
 # does not list it.
 visibility = ["web.pages.index", "tests"]
 
+# Tailwind class-merging helpers. Exposes only `cn`; nothing in production
+# consumes it yet, so visibility is tests-only.
+[[modules]]
+path = "web.components.ui"
+layer = "components"
+depends_on = []
+depends_on_external = ["reflex"]
+visibility = ["tests"]
+
 [[interfaces]]
 # Modules have no public members unless an explicit interface below exposes them.
 expose = []
@@ -169,6 +178,12 @@ expose = ["status_card"]
 visibility = ["web.pages.index", "tests"]
 exclusive = true
 
+[[interfaces]]
+from = ['web\.components\.ui']
+expose = ["cn"]
+visibility = ["tests"]
+exclusive = true
+
 # Smoke tests are layer-peer entrypoints. They can reach
 # web.pages.index and web.components.status_card directly because
 # layers are open (see `layers` above). Production modules cannot
@@ -180,6 +195,6 @@ exclusive = true
 [[modules]]
 path = "tests"
 layer = "entrypoints"
-depends_on = ["web.pages.index", "web.components.status_card"]
+depends_on = ["web.pages.index", "web.components.status_card", "web.components.ui"]
 depends_on_external = ["reflex"]
 visibility = []

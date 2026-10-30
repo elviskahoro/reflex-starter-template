@@ -9,7 +9,7 @@ from reflex.utils.imports import ImportVar
 from reflex.vars import FunctionStringVar, Var, VarData
 
 # package_path is set to "" explicitly; the default "/" makes Reflex emit a
-# malformed slash-suffixed import path (buridan-ui#63, #73).
+# malformed slash-suffixed import path (buridan-ui#63, buridan-ui#73).
 _clsx = FunctionStringVar.create(
     "clsx",
     _var_data=VarData(
@@ -26,4 +26,4 @@ _twmerge = FunctionStringVar.create(
 
 def cn(*args: Var[str] | str) -> Var[str]:
     """Join class names with `clsx`, then resolve Tailwind conflicts with `twMerge`."""
-    return _twmerge(_clsx(*args)).to(str)
+    return _twmerge(_clsx(*args)).to(str)  # pyright: ignore[reportUnknownMemberType]  # reflex typing is partially Unknown

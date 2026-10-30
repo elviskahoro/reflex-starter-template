@@ -49,6 +49,10 @@ tasks:
       uv sync --frozen --group dev
       echo "$PWD/.venv/bin" >> $RWX_ENV/PATH
       echo "VIRTUAL_ENV=$PWD/.venv" >> $RWX_ENV/VIRTUAL_ENV
+    # Re-sync from PyPI at least weekly so a yanked or removed distribution
+    # still surfaces on the nightly even when the lockfiles are unchanged.
+    cache:
+      ttl: 7 days
 
   - key: deps-prod
     use: [code, uv-install]
@@ -59,6 +63,10 @@ tasks:
       uv sync --frozen
       echo "$PWD/.venv/bin" >> $RWX_ENV/PATH
       echo "VIRTUAL_ENV=$PWD/.venv" >> $RWX_ENV/VIRTUAL_ENV
+    # Re-sync from PyPI at least weekly so a yanked or removed distribution
+    # still surfaces on the nightly even when the lockfiles are unchanged.
+    cache:
+      ttl: 7 days
 
   - key: pytest
     use: [code, deps-dev]

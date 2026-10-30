@@ -301,6 +301,19 @@ lint:
       paths:
         - .trunk/**
 
+    # reflex.lock/bun.lock is the frontend lockfile shipped by Reflex; vite is
+    # pinned by Reflex itself, so these advisories can only clear on a Reflex
+    # release that bumps it.
+    - linters: [osv-scanner]
+      paths:
+        - reflex.lock/bun.lock
+
+    # yamlfmt rewrites pinact's `sha # vX` comments to one space, which
+    # yamllint's comments rule rejects; the two cannot both pass here.
+    - linters: [yamllint]
+      paths:
+        - .github/workflows/pullfrog.yml
+
     - linters: [trufflehog]
       paths:
         - "**/*.parquet"

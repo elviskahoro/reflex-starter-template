@@ -1,1 +1,1 @@
-"""Test suite."""
+"""Smoke tests for the starter template."""

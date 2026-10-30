@@ -1,4 +1,4 @@
-# Reflex architecture: web.web -> web.pages.index (public page export only).
+# Reflex architecture: web.web -> web.pages.index -> web.components.* (public exports only).
 # rxconfig is an isolated framework entrypoint. New module imports require review.
 # https://docs.gauge.sh/usage/configuration
 source_roots = ["."]
@@ -7,13 +7,26 @@ exact = true
 forbid_circular_dependencies = true
 ignore_type_checking_imports = false
 include_string_imports = true
-layers = ["entrypoints", { name = "pages", closed = true }]
+# Three layers with strict ordering: production entrypoints -> pages ->
+# components. Layers are NOT closed (the closed-layer flag does not
+# allow per-module exemptions, and the smoke net in `tests/` needs to
+# construct status_card directly with literal inputs to keep regression
+# coverage honest). The intended `web.web -> web.pages.* ->
+# web.components.*` flow is still enforced at the visible-edges:
+# - `web.web.depends_on = ["web.pages.index"]` (entrypoint -> pages only)
+# - `web.components.status_card.visibility = ["web.pages.index", "tests"]`
+#   (the component is reachable from the page module and from the
+#   test module, but NOT from `web.web` itself)
+# - tests' visibility is `[]`, so production code cannot accidentally
+#   import it.
+# This is the same shape buridan-ui uses for its in-repo `tests/`
+# (see .tach/trunk.yaml in that repo, which does not use `closed`).
+layers = ["entrypoints", "pages", "components"]
 layers_explicit_depends_on = true
 
 # Do not let .gitignore silently remove application code from architecture checks.
 respect_gitignore = false
 exclude = [
-  "tests/**",
   ".agents/**",
   ".claude/**",
   ".context/**",
@@ -41,6 +54,13 @@ file_dependencies = [
   "reflex.lock/**",
 ]
 
+# Smoke tests run pytest, which is a dev-only dep. Telling tach to skip
+# external checking for pytest keeps `uv run tach check-external`
+# aligned with what pyproject.toml actually declares (production deps
+# only) rather than forcing pytest into `[project].dependencies`.
+[external]
+exclude = ["pytest"]
+
 # Default-deny new packages instead of folding their imports into a parent module.
 # Single-level globs keep each page's implementation inside its package boundary.
 # Concrete module declarations below override these defaults.
@@ -54,6 +74,13 @@ visibility = []
 [[modules]]
 path = "web.pages.*"
 layer = "pages"
+depends_on = []
+depends_on_external = []
+visibility = []
+
+[[modules]]
+path = "web.components.*"
+layer = "components"
 depends_on = []
 depends_on_external = []
 visibility = []
@@ -91,9 +118,33 @@ visibility = []
 [[modules]]
 path = "web.pages.index"
 layer = "pages"
+depends_on = ["web.components.status_card"]
+depends_on_external = ["reflex"]
+# `tests` reaches this page module directly because layers are open
+# (see `layers` above for why). `web.web` drives the same `page`
+# symbol at runtime; the smoke net drives it at import time.
+visibility = ["web.web", "tests"]
+
+[[modules]]
+path = "web.components"
+layer = "components"
+depends_on = []
+depends_on_external = []
+visibility = []
+
+# Reusable component: takes state and handlers as arguments, imports no page.
+[[modules]]
+path = "web.components.status_card"
+layer = "components"
 depends_on = []
 depends_on_external = ["reflex"]
-visibility = ["web.web"]
+# `tests` joins this visibility so the smoke net can call status_card
+# directly with literal inputs (verifying `EventType`, `rx.Component`
+# return, etc.). Production modules (`web.pages.index`) reach the
+# component via the `depends_on = [...]` declaration on the page
+# itself; nothing in `web.web` is allowed here because visibility
+# does not list it.
+visibility = ["web.pages.index", "tests"]
 
 [[interfaces]]
 # Modules have no public members unless an explicit interface below exposes them.
@@ -102,6 +153,33 @@ expose = []
 [[interfaces]]
 # Interface selectors are regexes, unlike module paths: escape literal dots.
 from = ['web\.pages\.index']
-expose = ["page"]
-visibility = ["web.web"]
+# Both `page` (the runtime factory) and `IndexState` (the state class
+# the smoke net instantiates by reference) are exposed. `page` is the
+# only symbol the reflex app calls at runtime; `IndexState` is a class
+# the app references by name, not by construction.
+expose = ["page", "IndexState"]
+# `tests` joins web.web as a permitted consumer so the smoke net can
+# call the page factory and read the IndexState class at import time.
+visibility = ["web.web", "tests"]
 exclusive = true
+
+[[interfaces]]
+from = ['web\.components\.status_card']
+expose = ["status_card"]
+visibility = ["web.pages.index", "tests"]
+exclusive = true
+
+# Smoke tests are layer-peer entrypoints. They can reach
+# web.pages.index and web.components.status_card directly because
+# layers are open (see `layers` above). Production modules cannot
+# accidentally import `tests/` because its `visibility = []` excludes
+# everything from the production module graph. pytest is not in
+# `depends_on_external` because [external].exclude above covers it;
+# reflex is listed because every reflex page factory invocation
+# imports it transitively.
+[[modules]]
+path = "tests"
+layer = "entrypoints"
+depends_on = ["web.pages.index", "web.components.status_card"]
+depends_on_external = ["reflex"]
+visibility = []

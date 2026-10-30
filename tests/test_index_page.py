@@ -10,8 +10,10 @@ from hypothesis import (
     strategies as st,
 )
 
-from web.pages.index import page
-from web.pages.index.page import IndexState
+from web.pages.index import (
+    IndexState,
+    page,
+)
 
 
 def test_page_returns_component() -> None:

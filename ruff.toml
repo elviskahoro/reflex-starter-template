@@ -15,6 +15,14 @@ ignore = [
   "CPY001", # no per-file copyright headers
 ]
 
+[lint.per-file-ignores]
+# Reflex event handlers are called positionally; `value=` would break handlers with other parameter names.
+"web/components/**" = ["FBT003"]
+
+# Smoke tests: pytest asserts are the substrate (S101); test names carry
+# the intent without per-method docstrings (D102/D103).
+"tests/**" = ["D102", "D103", "S101"]
+
 [lint.isort]
 case-sensitive = true
 combine-as-imports = true
@@ -23,7 +31,3 @@ order-by-type = true
 
 [lint.pydocstyle]
 convention = "google"
-
-[lint.per-file-ignores]
-# assert is pytest's normal check mechanism, not a production safety bypass.
-"tests/**" = ["S101"]

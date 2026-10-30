@@ -83,8 +83,44 @@ tasks:
         exit 1
       fi
 
+  # Tool cache: every linter/plugin pin in trunk.yaml is downloaded once and
+  # reused until .trunk/ changes. The filter only scopes the task defining it,
+  # so trunk-config and trunk-tools both declare it; keep them in lockstep.
+  - key: trunk-config
+    use: [code]
+    filter:
+      - .trunk/trunk.yaml
+    run: |
+      set -euo pipefail
+      mkdir -p "$HOME/trunk-seed"
+      cp -r .trunk "$HOME/trunk-seed/.trunk"
+      rm -rf "$HOME/trunk-seed/.trunk/.gitignore"
+      cd "$HOME/trunk-seed"
+      git init -q
+      # Pinned dates keep the seed commit byte-identical across cold re-runs,
+      # so the downstream cache key does not bust on wall-clock timestamps.
+      export GIT_AUTHOR_DATE="2000-01-01T00:00:00+00:00"
+      export GIT_COMMITTER_DATE="2000-01-01T00:00:00+00:00"
+      git -c user.name=rwx -c user.email=rwx@example.com commit -q --allow-empty -m seed
+
+  - key: trunk-tools
+    use: [trunk-install, trunk-config]
+    filter:
+      - .trunk/trunk.yaml
+    run: |
+      set -euo pipefail
+      cd "$HOME/trunk-seed"
+      trunk install --ci < /dev/null
+
+  # tach's external-dependency audit cannot be a Trunk lint command: Trunk
+  # runs batch commands from a sandbox holding only the diff's files, so every
+  # dependency imported outside the diff is falsely reported unused.
+  - key: tach-external
+    use: [deps]
+    run: uv run tach check-external
+
   - key: trunk-check-pr
-    use: [trunk-install]
+    use: [trunk-tools, deps]
     if: ${{ init.event-type == 'pull_request' }}
     run: |
       set -euo pipefail
@@ -93,7 +129,7 @@ tasks:
       BASE_SHA: ${{ init.base-sha }}
 
   - key: trunk-check-push
-    use: [trunk-install]
+    use: [trunk-tools, deps]
     if: ${{ init.event-type == 'push' }}
     run: |
       set -euo pipefail

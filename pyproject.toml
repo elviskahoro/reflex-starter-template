@@ -17,6 +17,8 @@ dev = ["pytest>=9.0", "pyrefly==1.3.1", "pyright==1.1.414", "tach==0.35.3"]
 # `testpaths` limits pytest collection to tests/ so it does not pick up
 # scripts or fixtures that happen to live elsewhere later.
 testpaths = ["tests"]
+markers = ["network: hits the public internet; deselected by default"]
+addopts = "-m 'not network'"
 
 [tool.pyrefly]
 project-includes = ["web", "rxconfig.py"]
@@ -36,3 +38,9 @@ unannotated-parameter = true
 unannotated-return = true
 unused-ignore = true
 unused-coroutine = true
+
+[tool.uv]
+# Dependency cooldown: ignore packages published in the last 7 days, matching
+# the Dependabot cooldown, so a freshly published (possibly malicious or
+# unstable) release is not locked immediately.
+exclude-newer = "7 days"

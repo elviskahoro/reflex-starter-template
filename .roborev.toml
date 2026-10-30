@@ -1,0 +1,33 @@
+# roborev review configuration. `review_guidelines` is embedded into every
+# review prompt; use it to encode deliberate house decisions so the reviewer
+# stops re-flagging them.
+
+review_guidelines = """
+- .web/ and reflex.lock/ are Reflex build output; do not review them.
+
+- reflex is pinned to an exact version in pyproject.toml on purpose; do not
+  suggest loosening the pin.
+
+- tach.toml is deliberately strict (default-deny modules, explicit
+  depends_on, exact = true). New cross-module imports must be declared
+  there; do not suggest relaxing the rules to make an import pass.
+
+- Linter, type-checker and tach settings are not to be weakened to make code
+  pass; flag any diff that does so.
+
+- `[tool.uv] exclude-newer = "7 days"` in pyproject.toml is a deliberate
+  dependency cooldown (it mirrors the Dependabot cooldown); do not flag it
+  or suggest removing it. The `[options]` block it adds to uv.lock is
+  expected.
+
+- `tach check-external` runs as its own task in .rwx/trunk-check.yml, not as
+  a Trunk lint command: Trunk lints from a sandbox holding only the diff, so
+  the audit would report every dependency as unused. Do not suggest moving
+  it into trunk.yaml.
+
+- RWX installers (uv, trunk) are checksum-pinned on purpose so a tampered
+  download fails closed; do not suggest unpinned or `latest` installs.
+
+- Tests marked `network` are deselected by default (`addopts` in
+  pyproject.toml); do not flag their absence from the default run.
+"""

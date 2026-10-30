@@ -47,7 +47,7 @@ In Railway's dashboard under your project:
 (`frontend-deps` RWX task, needs bun) fail when a page imports a JS package
 that `reflex.lock/package.json` does not declare, or when a build rewrites
 `reflex.lock`. Fix: run `uv run reflex export --frontend-only`, commit the
-updated `reflex.lock` (keep the trailing newline in `package.json`), or stop
+updated `reflex.lock` (no trailing newline in `package.json`), or stop
 importing the package. Upstream Reflex components can add packages you never
 typed, so inspect the compiled page, not just your source.
 

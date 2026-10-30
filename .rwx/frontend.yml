@@ -58,14 +58,16 @@ tasks:
     use: [deps]
     run: |
       set -euo pipefail
-      curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.3"
+      script="$(mktemp)"
+      trap 'rm -f "${script}"' EXIT
+      curl -fsSL https://bun.sh/install -o "${script}"
+      echo "04882bf41679d49d9af108657a1e5515bf04fdf2940d12c0d0b1e5d79dc53be8  ${script}" | sha256sum -c -
+      bash "${script}" "bun-v1.4.3"
       echo "$HOME/.bun/bin" >> $RWX_ENV/PATH
 
   - key: frontend-deps
     use: [bun-install]
     run: |
-      uv run reflex init
       uv run python scripts/check_frontend.py
     env:
-      REFLEX_ENV: prod
       PYTHONUNBUFFERED: "1"

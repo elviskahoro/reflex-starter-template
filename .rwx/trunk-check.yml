@@ -37,7 +37,6 @@ tasks:
       preserve-git-dir: true
 
   - key: uv-install
-    use: [code]
     run: |
       set -euo pipefail
       script="$(mktemp)"
@@ -48,14 +47,16 @@ tasks:
       echo "$HOME/.local/bin" >> $RWX_ENV/PATH
 
   - key: deps
-    use: [uv-install]
+    use: [code, uv-install]
+    filter:
+      - pyproject.toml
+      - uv.lock
     run: |
       uv sync --frozen --group dev
       echo "$PWD/.venv/bin" >> $RWX_ENV/PATH
       echo "VIRTUAL_ENV=$PWD/.venv" >> $RWX_ENV/VIRTUAL_ENV
 
   - key: trunk-install
-    use: [deps]
     run: |
       set -euo pipefail
       trunk_version="1.25.0"
@@ -116,11 +117,11 @@ tasks:
   # runs batch commands from a sandbox holding only the diff's files, so every
   # dependency imported outside the diff is falsely reported unused.
   - key: tach-external
-    use: [deps]
+    use: [code, deps]
     run: uv run tach check-external
 
   - key: trunk-check-pr
-    use: [trunk-tools, deps]
+    use: [code, trunk-tools, deps]
     if: ${{ init.event-type == 'pull_request' }}
     run: |
       set -euo pipefail
@@ -129,7 +130,7 @@ tasks:
       BASE_SHA: ${{ init.base-sha }}
 
   - key: trunk-check-push
-    use: [trunk-tools, deps]
+    use: [code, trunk-tools, deps]
     if: ${{ init.event-type == 'push' }}
     run: |
       set -euo pipefail

@@ -37,7 +37,6 @@ tasks:
       preserve-git-dir: true
 
   - key: uv-install
-    use: [code]
     run: |
       set -euo pipefail
       script="$(mktemp)"
@@ -48,12 +47,15 @@ tasks:
       echo "$HOME/.local/bin" >> $RWX_ENV/PATH
 
   - key: deps
-    use: [uv-install]
+    use: [code, uv-install]
+    filter:
+      - pyproject.toml
+      - uv.lock
     run: |
       uv sync --frozen --group dev
       echo "$PWD/.venv/bin" >> $RWX_ENV/PATH
       echo "VIRTUAL_ENV=$PWD/.venv" >> $RWX_ENV/VIRTUAL_ENV
 
   - key: pytest
-    use: [deps]
+    use: [code, deps]
     run: uv run pytest -q

@@ -6,7 +6,7 @@ Needs ``bun`` on PATH (no node). Runs, in order:
 2. build       ``reflex export --frontend-only`` (compiles pages, installs, bundles).
 3. drift       the build must leave ``reflex.lock`` unchanged.
 4. imports     every bare import in the generated ``.web`` sources is declared.
-5. knip        ``bunx knip`` reports no unlisted dependencies in ``.web``.
+5. knip        ``bunx knip@<pinned>`` reports no unlisted dependencies in ``.web``.
 
 Fast, build-free coverage of the same rule lives in
 ``tests/test_frontend_dependencies.py``.

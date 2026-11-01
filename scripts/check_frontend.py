@@ -30,6 +30,8 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 LOCK_DIR = ROOT_DIR / "reflex.lock"
 WEB_DIR = ROOT_DIR / ".web"
 
+# Pinned so a knip release cannot change the result without a repo change.
+KNIP_VERSION = "6.44.1"
 # Packages Vite/Reflex tooling reaches transitively; they are not ours to pin.
 ALLOWED_UNLISTED = {"connect"}  # used by Reflex's vite-plugin-safari-cachebust.js
 ALLOWED_PACKAGES = {"react", "react-dom", "react-router"} | ALLOWED_UNLISTED
@@ -131,7 +133,7 @@ def check_knip() -> list[str]:
     """Fail on knip-reported unlisted dependencies."""
     result = run(
         "bunx",
-        "knip",
+        f"knip@{KNIP_VERSION}",
         "--dependencies",
         "--reporter",
         "json",

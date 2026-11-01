@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01GdbLNHpGY9K1QSariNxoZw",
+  "agent_id": "a15abc2a3922f3f5e",
+  "subagent_type": "Explore",
+  "task_description": "Explore repo layout",
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 26047,
+    "cache_read_tokens": 48945,
+    "output_tokens": 3066,
+    "api_call_count": 4
+  },
+  "started_at": "2026-11-01T23:22:07.595076169Z",
+  "completed_at": "2026-11-01T23:22:30.982891546Z"
+}

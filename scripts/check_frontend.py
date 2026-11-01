@@ -6,7 +6,7 @@ Needs ``bun`` on PATH (no node). Runs, in order:
 2. build       ``reflex export --frontend-only`` (compiles pages, installs, bundles).
 3. drift       the build must leave ``reflex.lock`` unchanged.
 4. imports     every bare import in the generated ``.web`` sources is declared.
-5. knip        ``bunx knip`` reports no unlisted dependencies in ``.web``.
+5. knip        pinned ``bunx knip`` reports no unlisted dependencies in ``.web``.
 
 Fast, build-free coverage of the same rule lives in
 ``tests/test_frontend_dependencies.py``.
@@ -40,6 +40,8 @@ SOURCE_SUFFIXES = {".js", ".jsx", ".mjs", ".ts", ".tsx"}
 # Only the generated pages and their components; ``utils``/``components`` hold
 # Reflex runtime helpers that no page loads.
 SOURCE_DIRS = ("app", "app_components")
+# Pinned so a knip release can't change the result unasked; bump deliberately.
+KNIP_VERSION = "6.44.1"
 
 
 def run(*cmd: str, cwd: Path = ROOT_DIR) -> subprocess.CompletedProcess[str]:
@@ -131,7 +133,7 @@ def check_knip() -> list[str]:
     """Fail on knip-reported unlisted dependencies."""
     result = run(
         "bunx",
-        "knip",
+        f"knip@{KNIP_VERSION}",
         "--dependencies",
         "--reporter",
         "json",

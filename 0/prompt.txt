@@ -1,0 +1,586 @@
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/gx8ZG7/PR instructions.md (unknown size)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/gx8ZG7/PR instructions.md
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/z6PzhS/PR instructions.md (unknown size)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/z6PzhS/PR instructions.md
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+Merge the remote branch (main) into your branch and resolve conflicts. Then, commit and push your changes.
+
+
+## Organization prompt
+
+Below are the organization's preferences. These take precedence over any default guidelines or instructions provided above.
+
+<!-- Canonical source: flox-conductor-sandbox prompts/conductor/resolve-merge-conflicts.md.
+     Installed into a repo's .conductor settings [prompts].resolve_merge_conflicts by
+     scripts/install-conductor-prompts.py — do not hand-edit the TOML copy.
+     Sibling of create-pr.md; shares its gates (roborev, no force-push, no AI
+     attribution). Where a repo's own instructions differ, the repo wins. -->
+
+# Resolving Merge Conflicts
+
+## The principle: preserve intent, not text
+
+A conflict means two people changed the same region for different reasons. The job is to produce code that honors **both intents**, not to make the markers disappear. Picking a side wholesale (`--ours` / `--theirs`) silently discards someone's work; stitching lines together until it compiles can produce code neither side meant.
+
+Concretely:
+
+- Understand **why** each side changed the region before editing it.
+- The base branch's change is already reviewed and merged — it wins any genuine disagreement about *its* behavior. This branch's change must be re-expressed on top of it.
+- Never resolve a conflict you don't understand. Ask.
+- Resolution is not an opportunity to refactor, fix unrelated bugs, or reformat. Touch only what the conflict requires.
+- The result must build and pass tests — a conflict-free tree that doesn't run is not resolved.
+
+## Workflow
+
+### Step 1: Pre-flight checks
+
+Run these in a single batch of parallel `Bash` calls:
+
+```bash
+git status                                          # mid-merge/rebase already? uncommitted work?
+git branch --show-current                           # current branch?
+git rev-parse --abbrev-ref @{upstream} 2>/dev/null  # tracking ref?
+git log @{upstream}..HEAD --oneline 2>/dev/null     # unpushed commits?
+gh repo view --json defaultBranchRef --jq .defaultBranchRef.name  # confirm base
+gh pr view --json url,state,baseRefName,mergeable,mergeStateStatus 2>/dev/null  # PR + GitHub's view of the conflict
+git fetch origin
+```
+
+Branch on what you find:
+
+- **Already mid-merge or mid-rebase** (`git status` says so) — continue that operation; don't start a second one. Skip to Step 3.
+- **Uncommitted changes unrelated to the conflict** — stop and ask the user whether to commit, stash, or abandon. Never stash or discard silently; a stash taken mid-resolution is easy to lose.
+- **PR is `MERGED` or `CLOSED`** — nothing to resolve; tell the user and stop.
+- **`mergeable` is `MERGEABLE`** — GitHub sees no conflict. Confirm locally (Step 2); if the local merge is clean too, report that and stop rather than manufacturing work.
+- **No PR yet** — resolve against the default branch from the `gh repo view` call above.
+
+Use the PR's `baseRefName` as the base when a PR exists (it may not be `main`); call it `<base>` below.
+
+### Step 2: Choose a strategy (merge vs. rebase)
+
+Decide before touching anything, based on whether the branch is already published:
+
+| Situation | Strategy | Why |
+| --- | --- | --- |
+| Branch **is pushed** (has an upstream, PR open or shared) | `git merge origin/<base>` | Plain push afterwards. Rebasing would rewrite published history and require a force-push. |
+| Branch is **local only**, never pushed | `git rebase origin/<base>` | Keeps history linear; nobody else has these commits. |
+| User explicitly asks for rebase on a pushed branch | Rebase, but **stop before pushing** | Force-push needs explicit user approval (see Step 9). |
+
+If the repo's agent instructions or merge settings dictate a strategy (e.g., squash-only, linear-history rule), follow them.
+
+Then start the operation and list what conflicted:
+
+```bash
+git merge origin/<base>        # or: git rebase origin/<base>
+git diff --name-only --diff-filter=U   # unmerged files
+```
+
+If it merges cleanly, skip to Step 6 — there's nothing to resolve, but you still run tests and review.
+
+### Step 3: Understand each conflict before editing
+
+For every unmerged file, in parallel where independent:
+
+```bash
+git log --merge --oneline -- <file>      # commits from both sides touching it (merge)
+git diff --base <file>                   # ours vs. merge-base
+git diff <base-commit>...origin/<base> -- <file>   # what the base branch changed
+```
+
+Then, for each conflicted hunk, answer in your head:
+
+1. What was this region **before** either change (the merge-base)?
+2. What did **the base branch** change, and why? (`git log origin/<base> -- <file>`, commit messages, linked PR.)
+3. What did **this branch** change, and why? (Branch commits, PR description, conversation context.)
+4. Are the two intents **compatible** (both can hold), **overlapping** (same goal, pick one implementation), or **contradictory** (genuinely incompatible behavior)?
+
+Use `git checkout --merge <file>` or `git diff` with `merge.conflictStyle=zdiff3` to see the base text inside markers if the default two-way markers aren't enough.
+
+**Stop and ask the user** when intents are contradictory, when you can't tell why a side changed, or when resolving requires a product/design decision. Present both intents in one or two sentences each and a recommendation — don't ask open-ended.
+
+### Step 4: Resolve
+
+Per file, by type of conflict:
+
+| Conflict kind | Approach |
+| --- | --- |
+| **Compatible edits** (both sides added different things nearby) | Keep both, in a sensible order. |
+| **Overlapping edits** (both fixed/changed the same thing) | Take the base branch's version, then re-apply only what this branch adds *beyond* it. |
+| **Contradictory edits** | Ask the user (Step 3). |
+| **Renamed/moved/deleted on one side** | Apply the other side's edits to the new location, or confirm the deletion is intended — don't resurrect deleted files. |
+| **Lockfiles** (`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `flake.lock`, `manifest.lock`) | Never hand-merge. Take the base branch's file, then regenerate with the project's tool (`uv lock`, `npm install`, `flox ...`) so it reflects both manifests. |
+| **Generated files** (compiled output, snapshots, schema dumps) | Take either side, then regenerate with the project's generator. |
+| **Docs / changelogs / lists** | Keep both entries; resolve ordering to match the file's convention. |
+| **Binary files** | `git checkout --ours/--theirs <file>` is the only option — confirm which with the user if it isn't obvious. |
+
+Mechanics:
+
+- Edit the file to the intended final content and **remove every marker** (`<<<<<<<`, `=======`, `>>>>>>>`, and `|||||||` if using diff3 style).
+- Mark resolved with `git add <file>` only after the file is correct.
+- Don't use `git checkout --ours/--theirs` on a whole file for text files unless you've verified one side is a strict superset of the other.
+- Don't run `git merge -X ours` / `-X theirs` — blanket strategy options resolve hunks you haven't read.
+- During a **rebase**, "ours" is the branch being rebased onto and "theirs" is your commit being replayed — the reverse of merge. Re-check which is which before using either flag.
+- Never `git rebase --skip`, `git merge --abort`, or `git checkout .` to make a hard conflict go away without the user's say-so. Aborting is fine only to retry with a different strategy, and say so.
+
+### Step 5: Verify nothing was left behind
+
+Before concluding the merge/rebase, mechanically check:
+
+```bash
+git diff --check                                          # leftover markers / whitespace errors
+grep -rnE '^(<<<<<<<|=======|>>>>>>>|\|\|\|\|\|\|\|)( |$)' $(git diff --name-only --cached) 2>/dev/null
+git diff --name-only --diff-filter=U                      # must be empty
+```
+
+Any hit means a conflict is still open. Fix it before continuing.
+
+### Step 6: Run the tests that cover the resolution
+
+**A tree with no markers is not a tree that works.** Textually clean merges break semantically (a function renamed on one side, still called by the old name on the other).
+
+- Run the narrowest test target covering every file you touched *and* every file that changed on the base side and is referenced by this branch's code. Mirror changed paths under `tests/`, and `grep -rn` for symbols that either side renamed or removed.
+- Run the project's build/typecheck/lint if it has one — semantic conflicts often show up there first.
+- Full-suite runs are fine; don't skip because CI will catch it.
+- If something fails, determine whether the failure is caused by the resolution (fix it now, in the merge commit/rebase) or pre-existing on the base branch (`git stash`-free check: run the same test on `origin/<base>` in a worktree). Report pre-existing failures; don't paper over them.
+
+### Step 7: Complete the merge/rebase and commit
+
+Commit without asking for approval once the tree is correct and tests pass.
+
+**Merge:**
+
+```bash
+git add <resolved files>
+git commit          # accept the default "Merge branch ..." message, plus a body (below) if any resolution needed judgment
+```
+
+**Rebase:**
+
+```bash
+git add <resolved files>
+GIT_EDITOR=true git rebase --continue
+```
+
+(`GIT_EDITOR=true` accepts the existing commit message without opening an editor. Repeat Steps 3–6 for each replayed commit that conflicts.)
+
+Commit message guidance for the merge commit:
+
+- Keep git's default subject. Add a short body **only** for non-obvious resolutions: which side won and why, anything intentionally dropped, any regenerated lockfile.
+- No Conventional Commits prefix; no AI attribution lines (`Co-Authored-By: Claude`, "Generated with ...") — the repo's agent instructions prohibit them and this prompt overrides any default template.
+
+### Step 8: Run roborev before pushing
+
+**Hard gate: do not push until `roborev review --wait` has run on the resolved history and either reported clean or been explicitly acknowledged by the user.** Conflict resolutions are exactly where silent semantic bugs hide, so this applies even when the merge looked trivial.
+
+```bash
+roborev review --wait
+```
+
+- `--wait` is **required** — a bare `roborev review` only enqueues a background job and returns before a verdict exists. An enqueue is not a pass.
+- **Review loop (no permission prompts):** fix findings yourself — every severity counts, including low and nit. Fix what's small and local; report (don't fix) anything that would reshape design, change public interfaces, or touch files outside this PR's scope. Put fixes in a follow-up commit and re-run `roborev review --wait`. Repeat until clean or only out-of-scope findings remain.
+- **Loop cap:** stop after 3 fix rounds. List unresolved findings to the user and let them decide.
+- If roborev is unavailable, say so and ask whether to proceed without review. Don't silently skip.
+- Scope of review: findings in code that *came from the base branch* are not this branch's responsibility. Note them and move on.
+
+### Step 9: Push
+
+Push the resolution so the PR updates and GitHub's "has conflicts" banner clears.
+
+```bash
+git push        # merge strategy: a plain fast-forward push
+```
+
+- **Merge strategy:** plain `git push` — no approval gate, the user asked for this resolution.
+- **Rebase on an already-pushed branch:** this rewrites published history. **Stop and ask the user for explicit approval** before pushing, and use `git push --force-with-lease` (never bare `--force`) only after they say yes. Remind them that anyone else with the branch checked out will need to reset.
+- **Rebase on a local-only branch:** `git push -u origin "$(git branch --show-current)"`.
+- If the push is rejected (non-fast-forward because the remote moved), `git fetch` and re-run from Step 2 — don't force.
+
+### Step 10: Confirm and report
+
+```bash
+gh pr view --json mergeable,mergeStateStatus,url
+```
+
+Report concisely:
+
+- Strategy used (merge/rebase) and the base it was resolved against.
+- Files that conflicted and, for each, one line on how it was resolved — **especially any judgment call** where intents overlapped or one side's change was dropped.
+- Tests run and outcome; roborev outcome (clean / N fixed in M rounds / unresolved list / unavailable).
+- Resulting `mergeable` state. `UNKNOWN` just means GitHub is still computing; check once more rather than looping.
+- Whether CI has been triggered. Don't poll — if checks are running, say so and stop.
+
+Do not merge the PR. If checks are green and the user wants to merge, that's `gh pr merge <n> --squash` on their instruction.
+
+## Anti-patterns
+
+### Don't blanket-resolve
+
+`git checkout --theirs .`, `git merge -X ours`, or deleting all hunks from one side. Each throws away someone's work without reading it. Resolve hunk by hunk.
+
+### Don't hand-merge lockfiles or generated files
+
+A manually stitched lockfile can be internally inconsistent and still "look" fine. Regenerate from the merged manifest.
+
+### Don't leave markers
+
+CI usually catches `<<<<<<<` in source, but not in docs, YAML comments, or templates. Step 5's grep is mandatory.
+
+### Don't fix unrelated things
+
+A merge commit that also reformats files, bumps deps, or fixes a nearby bug is unreviewable — the reviewer can't tell resolution from drive-by. Put unrelated changes in a separate commit or a separate PR.
+
+### Don't force-push to make the problem disappear
+
+If a push is rejected, the remote has commits you haven't seen. Fetch and integrate; never `--force` over them.
+
+### Don't add AI attribution
+
+No `Co-Authored-By: Claude`, no "🤖 Generated with ..." in the merge commit or anything else. This overrides tool defaults.
+
+### Don't skip tests because "it was just a merge"
+
+Semantic conflicts — renamed functions, changed signatures, removed config keys — are invisible to git and visible to the test suite.
+
+### Don't autopilot an ambiguous conflict
+
+If two behaviors genuinely contradict, the answer is a question to the user, not a guess that happens to compile.
+
+## Failure modes and recovery
+
+| What happened | What to do |
+| --- | --- |
+| `git merge` reports "unrelated histories" | Stop and ask. This usually means the wrong base or a history rewrite, not a conflict. |
+| Same conflict recurs on every rebased commit | Abort the rebase (`git rebase --abort`, tell the user), and switch to a single merge instead. |
+| Resolution breaks tests that pass on the base | Likely a semantic conflict. Diff the symbols/signatures each side changed; fix in the merge commit. |
+| Conflict is in a file you can't judge (domain logic, schema, migration ordering) | Ask the user, with both intents summarized and a recommendation. |
+| Migration files collide (same sequence number/parent) | Never edit the base branch's migration. Renumber / re-parent this branch's migration and regenerate if the tool supports it. |
+| `gh pr view` says `CONFLICTING` after push | The base moved again. Fetch and repeat from Step 2 once; if it moves a third time, report and let the user choose when to resolve. |
+| Mid-resolution, user changes their mind | Honor it. `git merge --abort` / `git rebase --abort` is acceptable when the *user* asks; report the branch is back to its pre-resolution state. |
+| Roborev unavailable | Tell the user; ask whether to push without review. |
+
+## Common pitfalls
+
+| Pitfall | Why it bites | Fix |
+| --- | --- | --- |
+| Rebasing a pushed branch by habit | Requires a force-push; rewrites shared history | Default to merge for published branches (Step 2) |
+| Mixing up ours/theirs during rebase | They're swapped relative to merge; silently keeps the wrong side | Re-derive which is which before any flag use (Step 4) |
+| Resolving by reading only the conflict hunk | Misses the intent in surrounding code and commit history | Run Step 3's history/base diffs first |
+| Trusting "no markers" as done | Semantic conflicts compile fine and fail later | Step 6 tests + Step 8 roborev |
+| Hand-editing a lockfile | Inconsistent with manifests | Regenerate |
+| Running `git add .` after resolving | Stages unrelated local cruft (`.claude/`, `.agents/`, Conductor-local files) | Add only the resolved files by name |
+| Pushing before roborev | Same gate as `create-pr.md`; resolutions are high-risk | Step 8 before Step 9 |
+
+## Red flags (stop and rethink)
+
+- About to run `git push --force` or `git push -f`.
+- About to run `git checkout --ours .` / `--theirs .`, or `git merge -X ours|theirs`.
+- About to `git rebase --skip` or `git merge --abort` without the user asking.
+- Resolving a hunk whose purpose you can't state in one sentence.
+- A resolution diff that touches files that weren't in conflict (other than regenerated lockfiles/generated output).
+- `git diff --check` or the marker grep still reports hits.
+- About to push with tests failing or roborev not run.
+- Adding any AI-attribution footer to the merge commit.
+
+## User prompt
+
+Below are the user's preferences. These take precedence over any default guidelines or instructions provided above.
+
+<!-- Canonical source: flox-conductor-sandbox prompts/conductor/resolve-merge-conflicts.md.
+     Installed into a repo's .conductor settings [prompts].resolve_merge_conflicts by
+     scripts/install-conductor-prompts.py — do not hand-edit the TOML copy.
+     Sibling of create-pr.md; shares its gates (roborev, no force-push, no AI
+     attribution). Where a repo's own instructions differ, the repo wins. -->
+
+# Resolving Merge Conflicts
+
+## The principle: preserve intent, not text
+
+A conflict means two people changed the same region for different reasons. The job is to produce code that honors **both intents**, not to make the markers disappear. Picking a side wholesale (`--ours` / `--theirs`) silently discards someone's work; stitching lines together until it compiles can produce code neither side meant.
+
+Concretely:
+
+- Understand **why** each side changed the region before editing it.
+- The base branch's change is already reviewed and merged — it wins any genuine disagreement about *its* behavior. This branch's change must be re-expressed on top of it.
+- Never resolve a conflict you don't understand. Ask.
+- Resolution is not an opportunity to refactor, fix unrelated bugs, or reformat. Touch only what the conflict requires.
+- The result must build and pass tests — a conflict-free tree that doesn't run is not resolved.
+
+## Workflow
+
+### Step 1: Pre-flight checks
+
+Run these in a single batch of parallel `Bash` calls:
+
+```bash
+git status                                          # mid-merge/rebase already? uncommitted work?
+git branch --show-current                           # current branch?
+git rev-parse --abbrev-ref @{upstream} 2>/dev/null  # tracking ref?
+git log @{upstream}..HEAD --oneline 2>/dev/null     # unpushed commits?
+gh repo view --json defaultBranchRef --jq .defaultBranchRef.name  # confirm base
+gh pr view --json url,state,baseRefName,mergeable,mergeStateStatus 2>/dev/null  # PR + GitHub's view of the conflict
+git fetch origin
+```
+
+Branch on what you find:
+
+- **Already mid-merge or mid-rebase** (`git status` says so) — continue that operation; don't start a second one. Skip to Step 3.
+- **Uncommitted changes unrelated to the conflict** — stop and ask the user whether to commit, stash, or abandon. Never stash or discard silently; a stash taken mid-resolution is easy to lose.
+- **PR is `MERGED` or `CLOSED`** — nothing to resolve; tell the user and stop.
+- **`mergeable` is `MERGEABLE`** — GitHub sees no conflict. Confirm locally (Step 2); if the local merge is clean too, report that and stop rather than manufacturing work.
+- **No PR yet** — resolve against the default branch from the `gh repo view` call above.
+
+Use the PR's `baseRefName` as the base when a PR exists (it may not be `main`); call it `<base>` below.
+
+### Step 2: Choose a strategy (merge vs. rebase)
+
+Decide before touching anything, based on whether the branch is already published:
+
+| Situation | Strategy | Why |
+| --- | --- | --- |
+| Branch **is pushed** (has an upstream, PR open or shared) | `git merge origin/<base>` | Plain push afterwards. Rebasing would rewrite published history and require a force-push. |
+| Branch is **local only**, never pushed | `git rebase origin/<base>` | Keeps history linear; nobody else has these commits. |
+| User explicitly asks for rebase on a pushed branch | Rebase, but **stop before pushing** | Force-push needs explicit user approval (see Step 9). |
+
+If the repo's agent instructions or merge settings dictate a strategy (e.g., squash-only, linear-history rule), follow them.
+
+Then start the operation and list what conflicted:
+
+```bash
+git merge origin/<base>        # or: git rebase origin/<base>
+git diff --name-only --diff-filter=U   # unmerged files
+```
+
+If it merges cleanly, skip to Step 6 — there's nothing to resolve, but you still run tests and review.
+
+### Step 3: Understand each conflict before editing
+
+For every unmerged file, in parallel where independent:
+
+```bash
+git log --merge --oneline -- <file>      # commits from both sides touching it (merge)
+git diff --base <file>                   # ours vs. merge-base
+git diff <base-commit>...origin/<base> -- <file>   # what the base branch changed
+```
+
+Then, for each conflicted hunk, answer in your head:
+
+1. What was this region **before** either change (the merge-base)?
+2. What did **the base branch** change, and why? (`git log origin/<base> -- <file>`, commit messages, linked PR.)
+3. What did **this branch** change, and why? (Branch commits, PR description, conversation context.)
+4. Are the two intents **compatible** (both can hold), **overlapping** (same goal, pick one implementation), or **contradictory** (genuinely incompatible behavior)?
+
+Use `git checkout --merge <file>` or `git diff` with `merge.conflictStyle=zdiff3` to see the base text inside markers if the default two-way markers aren't enough.
+
+**Stop and ask the user** when intents are contradictory, when you can't tell why a side changed, or when resolving requires a product/design decision. Present both intents in one or two sentences each and a recommendation — don't ask open-ended.
+
+### Step 4: Resolve
+
+Per file, by type of conflict:
+
+| Conflict kind | Approach |
+| --- | --- |
+| **Compatible edits** (both sides added different things nearby) | Keep both, in a sensible order. |
+| **Overlapping edits** (both fixed/changed the same thing) | Take the base branch's version, then re-apply only what this branch adds *beyond* it. |
+| **Contradictory edits** | Ask the user (Step 3). |
+| **Renamed/moved/deleted on one side** | Apply the other side's edits to the new location, or confirm the deletion is intended — don't resurrect deleted files. |
+| **Lockfiles** (`uv.lock`, `package-lock.json`, `pnpm-lock.yaml`, `flake.lock`, `manifest.lock`) | Never hand-merge. Take the base branch's file, then regenerate with the project's tool (`uv lock`, `npm install`, `flox ...`) so it reflects both manifests. |
+| **Generated files** (compiled output, snapshots, schema dumps) | Take either side, then regenerate with the project's generator. |
+| **Docs / changelogs / lists** | Keep both entries; resolve ordering to match the file's convention. |
+| **Binary files** | `git checkout --ours/--theirs <file>` is the only option — confirm which with the user if it isn't obvious. |
+
+Mechanics:
+
+- Edit the file to the intended final content and **remove every marker** (`<<<<<<<`, `=======`, `>>>>>>>`, and `|||||||` if using diff3 style).
+- Mark resolved with `git add <file>` only after the file is correct.
+- Don't use `git checkout --ours/--theirs` on a whole file for text files unless you've verified one side is a strict superset of the other.
+- Don't run `git merge -X ours` / `-X theirs` — blanket strategy options resolve hunks you haven't read.
+- During a **rebase**, "ours" is the branch being rebased onto and "theirs" is your commit being replayed — the reverse of merge. Re-check which is which before using either flag.
+- Never `git rebase --skip`, `git merge --abort`, or `git checkout .` to make a hard conflict go away without the user's say-so. Aborting is fine only to retry with a different strategy, and say so.
+
+### Step 5: Verify nothing was left behind
+
+Before concluding the merge/rebase, mechanically check:
+
+```bash
+git diff --check                                          # leftover markers / whitespace errors
+grep -rnE '^(<<<<<<<|=======|>>>>>>>|\|\|\|\|\|\|\|)( |$)' $(git diff --name-only --cached) 2>/dev/null
+git diff --name-only --diff-filter=U                      # must be empty
+```
+
+Any hit means a conflict is still open. Fix it before continuing.
+
+### Step 6: Run the tests that cover the resolution
+
+**A tree with no markers is not a tree that works.** Textually clean merges break semantically (a function renamed on one side, still called by the old name on the other).
+
+- Run the narrowest test target covering every file you touched *and* every file that changed on the base side and is referenced by this branch's code. Mirror changed paths under `tests/`, and `grep -rn` for symbols that either side renamed or removed.
+- Run the project's build/typecheck/lint if it has one — semantic conflicts often show up there first.
+- Full-suite runs are fine; don't skip because CI will catch it.
+- If something fails, determine whether the failure is caused by the resolution (fix it now, in the merge commit/rebase) or pre-existing on the base branch (`git stash`-free check: run the same test on `origin/<base>` in a worktree). Report pre-existing failures; don't paper over them.
+
+### Step 7: Complete the merge/rebase and commit
+
+Commit without asking for approval once the tree is correct and tests pass.
+
+**Merge:**
+
+```bash
+git add <resolved files>
+git commit          # accept the default "Merge branch ..." message, plus a body (below) if any resolution needed judgment
+```
+
+**Rebase:**
+
+```bash
+git add <resolved files>
+GIT_EDITOR=true git rebase --continue
+```
+
+(`GIT_EDITOR=true` accepts the existing commit message without opening an editor. Repeat Steps 3–6 for each replayed commit that conflicts.)
+
+Commit message guidance for the merge commit:
+
+- Keep git's default subject. Add a short body **only** for non-obvious resolutions: which side won and why, anything intentionally dropped, any regenerated lockfile.
+- No Conventional Commits prefix; no AI attribution lines (`Co-Authored-By: Claude`, "Generated with ...") — the repo's agent instructions prohibit them and this prompt overrides any default template.
+
+### Step 8: Run roborev before pushing
+
+**Hard gate: do not push until `roborev review --wait` has run on the resolved history and either reported clean or been explicitly acknowledged by the user.** Conflict resolutions are exactly where silent semantic bugs hide, so this applies even when the merge looked trivial.
+
+```bash
+roborev review --wait
+```
+
+- `--wait` is **required** — a bare `roborev review` only enqueues a background job and returns before a verdict exists. An enqueue is not a pass.
+- **Review loop (no permission prompts):** fix findings yourself — every severity counts, including low and nit. Fix what's small and local; report (don't fix) anything that would reshape design, change public interfaces, or touch files outside this PR's scope. Put fixes in a follow-up commit and re-run `roborev review --wait`. Repeat until clean or only out-of-scope findings remain.
+- **Loop cap:** stop after 3 fix rounds. List unresolved findings to the user and let them decide.
+- If roborev is unavailable, say so and ask whether to proceed without review. Don't silently skip.
+- Scope of review: findings in code that *came from the base branch* are not this branch's responsibility. Note them and move on.
+
+### Step 9: Push
+
+Push the resolution so the PR updates and GitHub's "has conflicts" banner clears.
+
+```bash
+git push        # merge strategy: a plain fast-forward push
+```
+
+- **Merge strategy:** plain `git push` — no approval gate, the user asked for this resolution.
+- **Rebase on an already-pushed branch:** this rewrites published history. **Stop and ask the user for explicit approval** before pushing, and use `git push --force-with-lease` (never bare `--force`) only after they say yes. Remind them that anyone else with the branch checked out will need to reset.
+- **Rebase on a local-only branch:** `git push -u origin "$(git branch --show-current)"`.
+- If the push is rejected (non-fast-forward because the remote moved), `git fetch` and re-run from Step 2 — don't force.
+
+### Step 10: Confirm and report
+
+```bash
+gh pr view --json mergeable,mergeStateStatus,url
+```
+
+Report concisely:
+
+- Strategy used (merge/rebase) and the base it was resolved against.
+- Files that conflicted and, for each, one line on how it was resolved — **especially any judgment call** where intents overlapped or one side's change was dropped.
+- Tests run and outcome; roborev outcome (clean / N fixed in M rounds / unresolved list / unavailable).
+- Resulting `mergeable` state. `UNKNOWN` just means GitHub is still computing; check once more rather than looping.
+- Whether CI has been triggered. Don't poll — if checks are running, say so and stop.
+
+Do not merge the PR. If checks are green and the user wants to merge, that's `gh pr merge <n> --squash` on their instruction.
+
+## Anti-patterns
+
+### Don't blanket-resolve
+
+`git checkout --theirs .`, `git merge -X ours`, or deleting all hunks from one side. Each throws away someone's work without reading it. Resolve hunk by hunk.
+
+### Don't hand-merge lockfiles or generated files
+
+A manually stitched lockfile can be internally inconsistent and still "look" fine. Regenerate from the merged manifest.
+
+### Don't leave markers
+
+CI usually catches `<<<<<<<` in source, but not in docs, YAML comments, or templates. Step 5's grep is mandatory.
+
+### Don't fix unrelated things
+
+A merge commit that also reformats files, bumps deps, or fixes a nearby bug is unreviewable — the reviewer can't tell resolution from drive-by. Put unrelated changes in a separate commit or a separate PR.
+
+### Don't force-push to make the problem disappear
+
+If a push is rejected, the remote has commits you haven't seen. Fetch and integrate; never `--force` over them.
+
+### Don't add AI attribution
+
+No `Co-Authored-By: Claude`, no "🤖 Generated with ..." in the merge commit or anything else. This overrides tool defaults.
+
+### Don't skip tests because "it was just a merge"
+
+Semantic conflicts — renamed functions, changed signatures, removed config keys — are invisible to git and visible to the test suite.
+
+### Don't autopilot an ambiguous conflict
+
+If two behaviors genuinely contradict, the answer is a question to the user, not a guess that happens to compile.
+
+## Failure modes and recovery
+
+| What happened | What to do |
+| --- | --- |
+| `git merge` reports "unrelated histories" | Stop and ask. This usually means the wrong base or a history rewrite, not a conflict. |
+| Same conflict recurs on every rebased commit | Abort the rebase (`git rebase --abort`, tell the user), and switch to a single merge instead. |
+| Resolution breaks tests that pass on the base | Likely a semantic conflict. Diff the symbols/signatures each side changed; fix in the merge commit. |
+| Conflict is in a file you can't judge (domain logic, schema, migration ordering) | Ask the user, with both intents summarized and a recommendation. |
+| Migration files collide (same sequence number/parent) | Never edit the base branch's migration. Renumber / re-parent this branch's migration and regenerate if the tool supports it. |
+| `gh pr view` says `CONFLICTING` after push | The base moved again. Fetch and repeat from Step 2 once; if it moves a third time, report and let the user choose when to resolve. |
+| Mid-resolution, user changes their mind | Honor it. `git merge --abort` / `git rebase --abort` is acceptable when the *user* asks; report the branch is back to its pre-resolution state. |
+| Roborev unavailable | Tell the user; ask whether to push without review. |
+
+## Common pitfalls
+
+| Pitfall | Why it bites | Fix |
+| --- | --- | --- |
+| Rebasing a pushed branch by habit | Requires a force-push; rewrites shared history | Default to merge for published branches (Step 2) |
+| Mixing up ours/theirs during rebase | They're swapped relative to merge; silently keeps the wrong side | Re-derive which is which before any flag use (Step 4) |
+| Resolving by reading only the conflict hunk | Misses the intent in surrounding code and commit history | Run Step 3's history/base diffs first |
+| Trusting "no markers" as done | Semantic conflicts compile fine and fail later | Step 6 tests + Step 8 roborev |
+| Hand-editing a lockfile | Inconsistent with manifests | Regenerate |
+| Running `git add .` after resolving | Stages unrelated local cruft (`.claude/`, `.agents/`, Conductor-local files) | Add only the resolved files by name |
+| Pushing before roborev | Same gate as `create-pr.md`; resolutions are high-risk | Step 8 before Step 9 |
+
+## Red flags (stop and rethink)
+
+- About to run `git push --force` or `git push -f`.
+- About to run `git checkout --ours .` / `--theirs .`, or `git merge -X ours|theirs`.
+- About to `git rebase --skip` or `git merge --abort` without the user asking.
+- Resolving a hunk whose purpose you can't state in one sentence.
+- A resolution diff that touches files that weren't in conflict (other than regenerated lockfiles/generated output).
+- `git diff --check` or the marker grep still reports hits.
+- About to push with tests failing or roborev not run.
+- Adding any AI-attribution footer to the merge commit.
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>

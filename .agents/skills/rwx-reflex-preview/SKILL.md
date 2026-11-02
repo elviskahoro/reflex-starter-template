@@ -11,10 +11,16 @@ https://www.rwx.com/blog/preview-your-web-apps-with-rwx. Stick to the docs and
 
 ## Layout
 
-Tasks: `code` (git/clone) -> `system-deps` (caddy, uv) -> `build`
-(`uv sync`, `reflex export --frontend-only`, unzip to `/srv`) -> `preview`
-(`app:` task, port 3000, runs backend on :8000 + Caddy via the repo Caddyfile)
--> `share-link` (prints `tasks.preview.app.url`).
+Tasks: `code` (git/clone) -> `uv-install` (checksum-pinned uv) -> `deps`
+(`uv sync --frozen`) -> `reflex-export` (`reflex export --frontend-only`)
+-> `system-deps` (caddy, unzip) -> `build` (unzips `frontend.zip` to
+`/srv`) -> `preview` (`app:` task, port 3000, runs backend on :8000 +
+Caddy via the repo Caddyfile) -> `share-link` (prints
+`tasks.preview.app.url`).
+
+`code`/`uv-install`/`deps`/`reflex-export` are byte-identical to
+`reflex-build.yml` so RWX's content cache reuses its export instead of
+re-running it; keep them in lockstep.
 
 ## Commands
 

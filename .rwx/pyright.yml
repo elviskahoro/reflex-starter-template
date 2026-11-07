@@ -44,7 +44,7 @@ tasks:
     run: |
       set -euo pipefail
       uv sync --frozen --no-install-project --group dev
-      # Fetches the node runtime pyright needs, so it is cached with deps.
+      # node comes from the nodejs-wheel dev dependency (rwx/base has no node).
       .venv/bin/pyright --version
 
   # pyrightconfig.json extends a Trunk plugin config that is gitignored

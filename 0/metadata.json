@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M6V66KNA3JFG25SS266ZDPXM",
+  "session_id": "2aba87a2-91fa-430a-973f-acf74f43f17f",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-07T14:22:06.656447127Z",
+  "branch": "w-820/buridan-rwx-pipelines-copy",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".rwx/pyright.yml",
+    "pyproject.toml",
+    "uv.lock"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "c914d9bfdbf9",
+  "checkpoint_transcript_start": 156,
+  "transcript_lines_at_start": 156,
+  "compact_transcript_start": 29,
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 3440,
+    "cache_read_tokens": 315094,
+    "output_tokens": 1760,
+    "api_call_count": 5
+  },
+  "redaction": {
+    "replacements": 4,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 4,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 3
+  }
+}

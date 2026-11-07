@@ -7,7 +7,7 @@ on:
         repository: https://github.com/elviskahoro/reflex-starter-template.git
         event-type: push
         before-sha: ${{ event.github.push.before }}
-      if: ${{ event.git.branch == 'main' || event.git.branch == 'trunk-merge/**' }}
+      if: ${{ event.git.branch == 'main' || starts-with(event.git.branch, 'trunk-merge/') }}
       # merge.required_statuses (.trunk/trunk.yaml) must match status checks
       # that actually post. RWX's default per-run status is named after the
       # run definition and trigger ("RWX: trunk-check.yml (push)" vs

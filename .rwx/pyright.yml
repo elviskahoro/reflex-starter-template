@@ -28,38 +28,41 @@ tasks:
       set -euo pipefail
       script="$(mktemp)"
       trap 'rm -f "${script}"' EXIT
-      curl -LsSf https://astral.sh/uv/0.11.29/install.sh -o "${script}"
-      echo "504a79fd2ed0dcd47e7f04f0792cfd0871f62e24a7fe40fa8ae0f563a369f2bd  ${script}" | sha256sum -c -
+      curl -LsSf https://astral.sh/uv/0.11.13/install.sh -o "${script}"
+      echo "48cd5aca5d5671a3b3d5f61538cc8622e4434af63319115159990d8b0dd02416  ${script}" | sha256sum -c -
       sh "${script}"
       echo "$HOME/.local/bin" >> "$RWX_ENV/PATH"
 
   # Filtered to the lockfile inputs so this stays cached across ordinary
-  # commits. --no-install-project: sources are outside the filter; `uv run`
-  # installs the project itself.
+  # commits. --no-install-project: sources are outside the filter and are read from
+  # the `code` clone.
   - key: deps
     use: [uv-install, code]
     filter:
       - pyproject.toml
       - uv.lock
-      - .python-version
-    run: uv sync --frozen --no-install-project --group dev
-
-  # pyright is pinned to the Trunk version (not in the dev group). Installed in
-  # its own task, with no dependency on `code`, so it is cached across runs
-  # regardless of source changes. The version call also fetches the node runtime pyright needs, so that is cached too.
-  - key: pyright-install
-    use: uv-install
     run: |
       set -euo pipefail
-      uv tool install pyright==1.1.414
-      pyright --version
+      uv sync --frozen --no-install-project --group dev
+      # Fetches the node runtime pyright needs, so it is cached with deps.
+      .venv/bin/pyright --version
+
+  # pyrightconfig.json extends a Trunk plugin config that is gitignored
+  # install state; materialize it at the ref pinned in .trunk/trunk.yaml.
+  - key: trunk-plugin
+    use: code
+    run: |
+      set -euo pipefail
+      git clone --depth 1 --branch v0.2026.04.14.00.00 \
+        https://github.com/elviskahoro/oss-linter-trunk-config.git \
+        .trunk/plugins/oss-linter-trunk
 
   - key: pyright
-    use: [code, deps, pyright-install]
+    use: [code, deps, trunk-plugin]
     cache: false
     env:
       CHECK_PATHS: ${{ init.paths }}
     run: |
       set -euo pipefail
       # shellcheck disable=SC2086
-      pyright --pythonpath .venv/bin/python --project pyrightconfig.json ${CHECK_PATHS}
+      .venv/bin/pyright --pythonpath .venv/bin/python --project pyrightconfig.json ${CHECK_PATHS}

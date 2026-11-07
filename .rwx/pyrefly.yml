@@ -28,34 +28,26 @@ tasks:
       set -euo pipefail
       script="$(mktemp)"
       trap 'rm -f "${script}"' EXIT
-      curl -LsSf https://astral.sh/uv/0.11.29/install.sh -o "${script}"
-      echo "504a79fd2ed0dcd47e7f04f0792cfd0871f62e24a7fe40fa8ae0f563a369f2bd  ${script}" | sha256sum -c -
+      curl -LsSf https://astral.sh/uv/0.11.13/install.sh -o "${script}"
+      echo "48cd5aca5d5671a3b3d5f61538cc8622e4434af63319115159990d8b0dd02416  ${script}" | sha256sum -c -
       sh "${script}"
       echo "$HOME/.local/bin" >> "$RWX_ENV/PATH"
 
   # Filtered to the lockfile inputs so this stays cached across ordinary
-  # commits. --no-install-project: sources are outside the filter; `uv run`
-  # installs the project itself.
+  # commits. --no-install-project: sources are outside the filter and are read from
+  # the `code` clone.
   - key: deps
     use: [uv-install, code]
     filter:
       - pyproject.toml
       - uv.lock
-      - .python-version
-    run: uv sync --frozen --no-install-project --group dev
-
-  # pyrefly is pinned to the Trunk version (not in the dev group). Installed in
-  # its own task, with no dependency on `code`, so it is cached across runs
-  # regardless of source changes.
-  - key: pyrefly-install
-    use: uv-install
     run: |
       set -euo pipefail
-      uv tool install pyrefly==1.3.1
-      pyrefly --version
+      uv sync --frozen --no-install-project --group dev
+      .venv/bin/pyrefly --version
 
   - key: pyrefly
-    use: [code, deps, pyrefly-install]
+    use: [code, deps]
     cache: false
     env:
       CHECK_PATHS: ${{ init.paths }}
@@ -63,7 +55,7 @@ tasks:
       set -euo pipefail
       if [ -n "${CHECK_PATHS}" ]; then
         # shellcheck disable=SC2086
-        pyrefly check ${CHECK_PATHS}
+        .venv/bin/pyrefly check ${CHECK_PATHS}
       else
-        pyrefly check
+        .venv/bin/pyrefly check
       fi

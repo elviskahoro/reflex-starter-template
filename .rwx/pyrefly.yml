@@ -1,0 +1,69 @@
+# On-demand pyrefly with a synced venv. Manual only: no github trigger, so it
+# never runs on PRs or pushes and is not a required status.
+#   rwx run .rwx/pyrefly.yml --wait
+#   rwx run .rwx/pyrefly.yml --wait --init paths="web/foo.py web/bar.py"
+# `rwx run` layers the local working tree (incl. uncommitted/untracked files)
+# on the clone; HEAD must be pushed so `commit-sha` resolves.
+on:
+  cli:
+    init:
+      commit-sha: ${{ event.git.sha }}
+      paths: ""
+
+base:
+  image: ubuntu:24.04
+  config: rwx/base 1.2.0
+
+tasks:
+  - key: code
+    call: git/clone 2.2.0
+    with:
+      repository: https://github.com/elviskahoro/reflex-starter-template.git
+      ref: ${{ init.commit-sha }}
+
+  # Checksum-pinned uv installer: fails closed if the script at the versioned
+  # URL ever changes. No packaged uv/install leaf exists in the RWX catalog.
+  - key: uv-install
+    run: |
+      set -euo pipefail
+      script="$(mktemp)"
+      trap 'rm -f "${script}"' EXIT
+      curl -LsSf https://astral.sh/uv/0.11.29/install.sh -o "${script}"
+      echo "504a79fd2ed0dcd47e7f04f0792cfd0871f62e24a7fe40fa8ae0f563a369f2bd  ${script}" | sha256sum -c -
+      sh "${script}"
+      echo "$HOME/.local/bin" >> "$RWX_ENV/PATH"
+
+  # Filtered to the lockfile inputs so this stays cached across ordinary
+  # commits. --no-install-project: sources are outside the filter; `uv run`
+  # installs the project itself.
+  - key: deps
+    use: [uv-install, code]
+    filter:
+      - pyproject.toml
+      - uv.lock
+      - .python-version
+    run: uv sync --frozen --no-install-project --group dev
+
+  # pyrefly is pinned to the Trunk version (not in the dev group). Installed in
+  # its own task, with no dependency on `code`, so it is cached across runs
+  # regardless of source changes. 
+  - key: pyrefly-install
+    use: uv-install
+    run: |
+      set -euo pipefail
+      uv tool install pyrefly==1.3.1
+      pyrefly --version
+
+  - key: pyrefly
+    use: [code, deps, pyrefly-install]
+    cache: false
+    env:
+      CHECK_PATHS: ${{ init.paths }}
+    run: |
+      set -euo pipefail
+      if [ -n "${CHECK_PATHS}" ]; then
+        # shellcheck disable=SC2086
+        pyrefly check ${CHECK_PATHS}
+      else
+        pyrefly check
+      fi

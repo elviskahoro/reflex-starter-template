@@ -7,7 +7,7 @@ on:
         repository: https://github.com/elviskahoro/reflex-starter-template.git
         event-type: push
         before-sha: ${{ event.github.push.before }}
-      if: ${{ event.git.branch == 'main' || event.git.branch == 'trunk-merge/**' }}
+      if: ${{ event.git.branch == 'main' || starts-with(event.git.branch, 'trunk-merge/') }}
       # Custom status check so merge.required_statuses (.trunk/trunk.yaml)
       # can require this task by a name that posts identically on PR heads
       # and trunk-merge/** batch refs; the default per-run status renames

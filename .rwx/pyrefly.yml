@@ -46,7 +46,7 @@ tasks:
 
   # pyrefly is pinned to the Trunk version (not in the dev group). Installed in
   # its own task, with no dependency on `code`, so it is cached across runs
-  # regardless of source changes. 
+  # regardless of source changes.
   - key: pyrefly-install
     use: uv-install
     run: |

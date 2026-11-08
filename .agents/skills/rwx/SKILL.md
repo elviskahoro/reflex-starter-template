@@ -30,10 +30,10 @@ Run IDs, task IDs and logs resolve only under the workspace that owns them. If a
 
 | File | GitHub trigger | Purpose |
 | --- | --- | --- |
-| `tests.yml` | PR/push | pytest smoke tests, tach |
+| `tests.yml` | PR/push | pytest smoke tests |
 | `trunk-check.yml` | PR/push | lint (Trunk), `tach check-external` |
 | `frontend.yml` | PR/push | JS deps vs `reflex.lock` |
-| `reflex-build.yml` | push to `main`/`trunk-merge/*` | Reflex export build |
+| `reflex-build.yml` | PR/push to `main`, push to `trunk-merge/*` | Reflex export build |
 | `preview.yml` | pull request | PR preview app |
 | `smoke-nightly.yml` | push to `main` + cloud schedule | nightly smoke |
 | `pyright.yml`, `pyrefly.yml` | none (manual) | on-demand type checks |
@@ -44,7 +44,7 @@ Every file has an `on.cli` trigger, so all can be started locally.
 
 `rwx run` sends a git patch; no commit or push needed for the changes themselves:
 
-- Base: closest ancestor of local `HEAD` already on `origin` (`event.git.sha`). A `HEAD` that was never pushed cannot resolve, so push the branch once if a run fails to clone.
+- Base: closest ancestor of local `HEAD` already on `origin` (`event.git.sha`) — resolves even when the branch itself was never pushed. Resolution fails only when the branch shares no commits with `origin` (or no remote is configured); the error surfaces when the run starts, not at clone — push once in that case.
 - Patch: unpushed commits, staged, unstaged and untracked files. `.gitignore`d files are excluded; Git LFS changes error out.
 - `RWX_DISABLE_GIT_PATCH=1` disables patching.
 

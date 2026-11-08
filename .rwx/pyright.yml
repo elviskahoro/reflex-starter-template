@@ -3,7 +3,9 @@
 #   rwx run .rwx/pyright.yml --wait
 #   rwx run .rwx/pyright.yml --wait --init paths="web/foo.py web/bar.py"
 # `rwx run` layers the local working tree (incl. uncommitted/untracked files)
-# on the clone; HEAD must be pushed so `commit-sha` resolves.
+# on the clone; `commit-sha` resolves to the closest ancestor of local HEAD
+# already on origin, so no push is needed unless the branch shares no commits
+# with origin.
 on:
   cli:
     init:

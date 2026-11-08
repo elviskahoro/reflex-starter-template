@@ -4,6 +4,23 @@ Read .entire/agent-guide.md for this repository's workflow, source inspection, a
 @.entire/agent-guide.md
 <!-- entire-agent:end -->
 
+## RWX CLI
+
+Full guide: `rwx` skill in `.agents/skills/rwx/`. Auth: tokens are injected as
+`RWX_ACCESS_TOKEN_<WORKSPACE>` / `RWC_ACCESS_TOKEN_<WORKSPACE>`; the CLI reads only
+`RWX_ACCESS_TOKEN`, so export the one matching the repo owner (never print it):
+
+```bash
+OWNER=$(git remote get-url origin | sed -E 's#.*[:/]([^/]+)/[^/]+(\.git)?$#\1#' | tr a-z A-Z)
+export RWX_ACCESS_TOKEN="$(printenv "RWX_ACCESS_TOKEN_$OWNER" || printenv "RWC_ACCESS_TOKEN_$OWNER")"
+```
+
+- `rwx run .rwx/<file>.yml --wait` runs a pipeline on your local changes (no push
+  needed); `--target <task>`, `--init key=value`, `--json`.
+- `rwx results <run-id>`, `rwx logs <task-id>`, `rwx artifacts`, `rwx runs list`.
+- `rwx run .rwx/pyright.yml --wait` / `pyrefly.yml` for type checks without a `.venv`.
+- `rwx sandbox exec -- <cmd>`, `rwx lint .rwx/<file>.yml`, `rwx docs search|pull`.
+
 ## RWX PR previews
 
 `.rwx/preview.yml` defines the preview app (see the `rwx-reflex-preview` skill in

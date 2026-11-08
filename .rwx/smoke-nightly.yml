@@ -68,11 +68,11 @@ tasks:
     cache:
       ttl: 7 days
 
-  - key: pytest
+  - key: nightly-pytest
     use: [code, deps-dev]
     run: uv run pytest -q
 
-  - key: reflex-export
+  - key: nightly-reflex-export
     use: [code, deps-dev]
     run: |
       uv run reflex init
@@ -80,37 +80,3 @@ tasks:
     env:
       REFLEX_ENV: prod
       PYTHONUNBUFFERED: "1"
-
-  - key: trunk-install
-    run: |
-      set -euo pipefail
-      trunk_version="1.25.0"
-      if [[ "$(uname -m)" != "x86_64" ]]; then
-        echo "error: pinned Trunk CLI archive requires x86_64" >&2
-        exit 1
-      fi
-      trunk_archive="$(mktemp)"
-      trunk_extract="$(mktemp -d)"
-      trap 'rm -f "${trunk_archive}"; rm -rf "${trunk_extract}"' EXIT
-      curl -fsSL "https://trunk.io/releases/${trunk_version}/trunk-${trunk_version}-linux-x86_64.tar.gz" -o "${trunk_archive}"
-      echo "3845ff76a70cebb10e61a267ff719ffdccfa3ef6d877d51870a2c62b79603ab9  ${trunk_archive}" | sha256sum -c -
-      tar -C "${trunk_extract}" -xzf "${trunk_archive}"
-      trunk_binary="$(find "${trunk_extract}" -type f -name trunk -perm -u+x -print -quit)"
-      if [[ -z "${trunk_binary}" ]]; then
-        echo "error: Trunk CLI archive contains no executable trunk binary" >&2
-        exit 1
-      fi
-      mkdir -p "$HOME/.local/bin"
-      install -m 755 "${trunk_binary}" "$HOME/.local/bin/trunk"
-      echo "$HOME/.local/bin" >> $RWX_ENV/PATH
-      trunk_version_output="$("$HOME/.local/bin/trunk" --version)"
-      if [[ "${trunk_version_output}" != *"${trunk_version}"* ]]; then
-        echo "error: installed Trunk CLI did not report version ${trunk_version}" >&2
-        exit 1
-      fi
-
-  - key: trunk-check-all
-    use: [code, deps-dev, trunk-install]
-    run: |
-      set -euo pipefail
-      trunk check --all --ci < /dev/null

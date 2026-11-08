@@ -45,8 +45,8 @@ Every file has an `on.cli` trigger, so all can be started locally.
 `rwx run` sends a git patch; no commit or push needed for the changes themselves:
 
 - Base: closest ancestor of local `HEAD` already on `origin` (`event.git.sha`) — resolves even when the branch itself was never pushed. Resolution fails only when the branch shares no commits with `origin` (or no remote is configured); the error surfaces when the run starts, not at clone — push once in that case.
-- Patch: unpushed commits, staged, unstaged and untracked files. `.gitignore`d files are excluded; Git LFS changes error out.
-- `RWX_DISABLE_GIT_PATCH=1` disables patching.
+- Patch: unpushed commits, staged, unstaged and untracked files. `.gitignore`d files are excluded; Git LFS changes error out (documented in `rwx run --help`).
+- `RWX_DISABLE_GIT_PATCH=1` (any non-empty value) disables patching; `RWX_GIT_REMOTE` changes the remote it patches against (default `origin`). See `rwx docs pull /docs/cli-reference/environment-variables`.
 
 ```bash
 rwx run .rwx/tests.yml --wait --fail-fast

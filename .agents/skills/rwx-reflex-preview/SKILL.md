@@ -27,6 +27,11 @@ re-running it; keep them in lockstep.
 - Validate: `rwx lint .rwx/preview.yml` (also flags outdated package versions)
 - Test: `rwx run .rwx/preview.yml --init pull-request-number=0 --wait`
   (a local run has no PR number, so `init.pull-request-number` must be passed)
+- Local changes are included: `rwx run` uploads a git patch (unpushed commits,
+  staged/unstaged/untracked files) applied on top of `event.git.sha` by the
+  `code` task, so no push is needed. See the `rwx` skill for limits.
+- Share: `rwx apps share pr-0 --expires-in 7d` prints a private-app link
+  (`https://pr-0--<workspace>.rwx.run/rwx-share?code=...`); verified 200.
 - Logs: `rwx logs <run-id> --task <key> --output <dir>`; app URL is in the
   `share-link` task log.
 - `rwx apps enable|disable <endpoint-or-url>`; `rwx runs list|show`.

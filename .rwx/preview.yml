@@ -22,7 +22,7 @@ base:
 # re-running the export; keep them in lockstep.
 tasks:
   - key: code
-    call: git/clone 2.2.0
+    call: git/clone 2.4.0
     with:
       repository: https://github.com/elviskahoro/reflex-starter-template.git
       ref: ${{ init.commit-sha }}

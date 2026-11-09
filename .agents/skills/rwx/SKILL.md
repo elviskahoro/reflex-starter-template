@@ -71,6 +71,34 @@ rwx retry --help ; rwx cancel --help ; rwx debug --help ; rwx ssh --help
 
 `rwx run` prints the run URL and ID; `--json` for parsing. A green run is not proof a step worked: read logs for steps that talk to third parties. "CI is red" means: `rwx results` for the branch, then `rwx logs` for the failing task.
 
+## Deploy an app (preview)
+
+A task with `app: {endpoint, port}` is served at `https://<endpoint>--<workspace>.rwx.run`. Local changes are included (see above). Details for this repo: `rwx-reflex-preview` skill.
+
+```bash
+rwx run .rwx/preview.yml --init pull-request-number=0 --wait   # deploy; local cli runs need the PR number passed
+rwx apps share pr-0 --expires-in 7d                            # private apps: shareable link
+rwx apps disable pr-0 ; rwx apps enable pr-0
+```
+
+Verify the link with `curl -sL -o /dev/null -w "%{http_code}"`; a 200 does not prove backend events work.
+
+## Sandboxes (inner loop)
+
+Persistent cloud environments built from run definitions; local changes sync up before each command and back after. Iterate with `rwx sandbox exec -- <targeted tests>`, then confirm with a full `rwx run ... --wait`. Create `.rwx/sandbox.yml` with `rwx sandbox init`.
+
+## Full logs
+
+Logs are extracted by default — use `rwx logs <task-id> --json --output /tmp/logs` and grep the downloaded files (e.g. for `ERROR`) rather than pasting logs into context.
+
+## Container images
+
+`image` tasks write config to `$RWX_IMAGE/` (`command`, `user`); push with `rwx image push <task-id> --to <tag>`. Keep push credentials out of the image by pushing from a separate run. See `rwx docs search "build container images"`.
+
+## Running Claude Code on RWX to open a PR
+
+Reference: `rwx-cloud/calculator-demo` `.rwx/claude.yml`. Tasks: `code` (`git/clone`, `preserve-git-dir: true`), node install, `claude-code` (`npm install -g @anthropic-ai/claude-code`, bypass-permissions settings), `claude` (`cache: false`, `timeout: 30m`, runs `claude --dangerously-skip-permissions -p "$prompt"`, writes `claude-result`, `pr-title`, `pr-description` to `$RWX_VALUES/`), then `github/create-pull-request` with a GitHub app token. Keep `CLAUDE_CODE_OAUTH_TOKEN` in a vault, never in the repo; bypassing permissions is only reasonable because RWX tasks are sandboxed. Pin versions and check for newer ones.
+
 ## Other commands
 
 - Sandboxes: `rwx sandbox exec -- <command>` (also `init`, `list`, `start`, `stop`, `reset`).

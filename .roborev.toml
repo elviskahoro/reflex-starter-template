@@ -2,6 +2,10 @@
 # review prompt; use it to encode deliberate house decisions so the reviewer
 # stops re-flagging them.
 
+# Review with the pi agent via Fireworks (needs FIREWORKS_API_KEY in the env).
+agent = "pi"
+model = "fireworks/accounts/fireworks/models/glm-5p3-flash"
+
 review_guidelines = """
 - .web/ and reflex.lock/ are Reflex build output; do not review them.
 

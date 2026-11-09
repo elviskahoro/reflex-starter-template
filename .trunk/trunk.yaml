@@ -364,13 +364,13 @@ actions:
 
 merge:
   # Required statuses for the Trunk merge queue. Entries must be the exact
-  # status-check names GitHub sees, including RWX's "RWX: " prefix. The names
-  # below are backed by the custom per-trigger status-checks blocks in the
-  # .rwx/ pipelines: each posts the same name from both the pull_request and
-  # push triggers, so PR heads and trunk-merge/** batch refs report identical
-  # contexts (RWX's default per-run status renames itself after the trigger
-  # and so cannot be required). Re-verify after any pipeline or trigger
-  # rename by reading the contexts posted on a commit:
+  # status-check names GitHub sees, including RWX's "RWX: " prefix. The
+  # names below are backed by the status-checks blocks in the .rwx/
+  # pipelines: each names the default per-run status or defines a custom
+  # check so the same name posts from both the pull_request and push
+  # triggers, and PR heads and trunk-merge/** batch refs report identical
+  # contexts. Re-verify after any pipeline or trigger rename by reading the
+  # contexts posted on a commit:
   # api.github.com/repos/<owner>/<repo>/commits/<sha>/status.
   #
   # Per Trunk's docs, this list is one of three ways to define what the queue

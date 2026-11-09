@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M6YZK3JQ13EJGC2D139N61P6",
+  "session_id": "88105632-fdba-4448-8e62-911d0a348f99",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-09T01:43:32.092570076Z",
+  "branch": "w-995/rwx-captain-setup",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    ".rwx/smoke-nightly.yml",
+    ".rwx/tests.yml",
+    "pyproject.toml",
+    "uv.lock"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "8dd5382d188c",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 59685,
+    "cache_read_tokens": 429843,
+    "output_tokens": 3732,
+    "api_call_count": 14
+  },
+  "redaction": {
+    "replacements": 9,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 7,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 2,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 1
+  }
+}

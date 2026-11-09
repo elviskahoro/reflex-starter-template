@@ -16,10 +16,13 @@ on:
       # alike. Task lists stay per-trigger: a task skipped on this trigger
       # reports its custom check as failed.
       status-checks:
-        - tasks: [trunk-check-push]
-          name: trunk-check
-        - tasks: [tach-external]
-          name: tach-external
+        default:
+          name: trunk-check-run
+        custom:
+          - tasks: [trunk-check-push]
+            name: trunk-check
+          - tasks: [tach-external]
+            name: tach-external
     pull_request:
       init:
         commit-sha: ${{ event.git.sha }}
@@ -30,10 +33,13 @@ on:
       # Same stable names as the push trigger above; the task list swaps in
       # trunk-check-pr, the variant that runs on pull requests.
       status-checks:
-        - tasks: [trunk-check-pr]
-          name: trunk-check
-        - tasks: [tach-external]
-          name: tach-external
+        default:
+          name: trunk-check-run
+        custom:
+          - tasks: [trunk-check-pr]
+            name: trunk-check
+          - tasks: [tach-external]
+            name: tach-external
   cli:
     init:
       commit-sha: ${{ event.git.sha }}

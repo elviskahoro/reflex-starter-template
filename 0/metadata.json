@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M6ZX9FE6AHP9TNP4SQNZ8F21",
+  "session_id": "f9433e25-1d78-427a-b9ef-392c011bb8e7",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-09T10:22:35.121278036Z",
+  "branch": "w-1048/reflex-native-template-refactor",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "README.md",
+    "reflex.lock/bun.lock",
+    "reflex.lock/package.json"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "90bf23e4b7da",
+  "checkpoint_transcript_start": 670,
+  "transcript_lines_at_start": 670,
+  "compact_transcript_start": 96,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 4983,
+    "cache_read_tokens": 1124007,
+    "output_tokens": 2671,
+    "api_call_count": 8
+  },
+  "redaction": {
+    "replacements": 63,
+    "layers": {
+      "betterleaks": 10,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 43,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 10,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 7
+  }
+}

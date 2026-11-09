@@ -1,0 +1,141 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /home/vercel-sandbox/reflex-starter-template directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+Conductor shows the PR for whichever branch is checked out. After you open a PR from a different branch, or a PR stack, check out that PR's branch (for a stack, the top-most branch) so Conductor shows it.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+Save screenshots under `.context/` and embed them inline in the final response using Markdown image syntax, for example `![Screenshot](</home/vercel-sandbox/reflex-starter-template/.context/screenshot.png>)`.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+<system_instruction>
+This workspace is running in a VM in the cloud. The user connects using the Conductor app. The user will typically use this machine for a single task (sometimes involving multiple agents), then move on to a new machine. Don't bother using any long-term memory systems that are file-backed (e.g., `.../.claude/.../memory`).
+
+The user can turn "Sync files" on or off in the Conductor app. While it's on, this workspace's files sync one way to the user's Mac: changes made here appear on the Mac, but changes made on the Mac never sync back.
+
+To access the user's Mac, use the RunLocalCommand tool if you have it (search your tools for it). If you don't, you have no Mac access. If you need a resource from the user's local machine that is not present in the cloud workspace, explain why. 
+This cloud workspace is a Vercel sandbox running Amazon Linux 2023 (x86_64). You are user vercel-sandbox with passwordless sudo. Install packages with dnf (sudo dnf install -y <pkg>). Google Chrome is preinstalled at `google-chrome` if you need a browser.
+
+GitHub's PR stacking extension is installed on this machine. It can be used to create chains of small, reviewable PRs that build on each other. You can run `gh stack` for instructions.
+
+From this environment you can also drive Conductor itself: search cloud workspaces, create cloud workspaces, start agent sessions, send them prompts, read their replies, and share web pages or HTML files using preview URLs. Use the `conductor` CLI — run `conductor --help` for the full command reference and usage notes.
+The main Claude model families, from least to most capable, are sonnet, opus, and fable. The main OpenAI model families, from least to most capable, are gpt-5.6-luna, gpt-5.6-terra, gpt-5.6-sol, and gpt-6-astra. Run `conductor model` for every model id, effort level, and default per agent.
+</system_instruction>
+
+refactor this project template to only my native components
+https://github.com/elviskahoro/native
+
+also use this as inspiration for what the default page should have in it. ideally we have really really helpful design patterns and components that are oriented to the consumption of agents
+
+also make it clear that it's elvis kahoros reflex starter template 
+
+make sure the components theming and styling is all from native ideally my native repo
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+inspiration for the examples for the agent can be gleaned from 
+
+https://github.com/elviskahoro/reflex-web
+
+also remember that it must use ONLY NATIVE
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+download bun another way
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+use rwx cli to deploy it with a preview app
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+give me a new preview app
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+App Not Found
+We couldn't find an app at this address. It may have been removed, or the link may be incorrect.
+
+looks like it should be double dash not single
+
+https://pr-1048--elviskahoro.rwx.run/
+https://def8e9087d5fc429028dce6ce3575f622ec7d883--elviskahoro.rwx.run/
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+i think it's conductor and how it's displaying the url
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+built only from native components, with the guardrails, prompts, and verification loop an AI agent needs to extend it safely.
+
+"native" is meaningless to the user 
+
+let's change the prose around native and make it more focused around the why and not the what
+
+kind of like here
+https://github.com/elviskahoro/flox-conductor-sandbox/blob/main/prompts/conductor/create-pr.md
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/assets/c6de862f-7ce1-4eac-a2e3-036fbc84c4ad/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/assets/c6de862f-7ce1-4eac-a2e3-036fbc84c4ad/PR instructions.md (1.1 KB)
+</system_instruction>
+
+
+
+Create a PR .context/attachments/assets/c6de862f-7ce1-4eac-a2e3-036fbc84c4ad/PR instructions.md
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>

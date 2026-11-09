@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M704FNA1DDEE3RR6XXPXH1QS",
+  "strategy": "manual-commit",
+  "branch": "w-1098/reflex-starter-template-issue-57",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".rwx/preview.yml",
+    ".rwx/reflex-build.yml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 18346,
+    "cache_read_tokens": 153964,
+    "output_tokens": 1523,
+    "api_call_count": 5
+  },
+  "redaction": {
+    "replacements": 6,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 3,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 3,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

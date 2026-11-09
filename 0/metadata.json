@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M6ZW0G4G9P7SBSAP63WZJ0MX",
+  "session_id": "e84fd46c-3e65-4219-8f9a-a4c4bf6e13df",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-09T10:00:12.816626477Z",
+  "branch": "conductor/reflex-starter-template-dependabot-alerts",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "README.md",
+    "pyproject.toml",
+    "reflex.lock/bun.lock",
+    "reflex.lock/package.json",
+    "uv.lock"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "f43e144fb6d2",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 23390,
+    "cache_read_tokens": 362515,
+    "output_tokens": 3881,
+    "api_call_count": 12
+  },
+  "redaction": {
+    "replacements": 4,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 3,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

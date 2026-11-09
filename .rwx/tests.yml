@@ -67,6 +67,15 @@ tasks:
       echo "$PWD/.venv/bin" >> $RWX_ENV/PATH
       echo "VIRTUAL_ENV=$PWD/.venv" >> $RWX_ENV/VIRTUAL_ENV
 
+  - key: captain
+    call: rwx/install-captain 1.2.0
+
   - key: pytest
-    use: [code, deps]
-    run: uv run pytest -q
+    use: [code, deps, captain]
+    run: |
+      captain run reflex-starter-template-pytest \
+        --command "uv run pytest -q --report-log=pytest-results.json" \
+        --retry-command "uv run pytest -q --report-log=pytest-results.json {{ tests }}" \
+        --retries 2 \
+        --test-results pytest-results.json \
+        --print-summary

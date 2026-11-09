@@ -68,9 +68,18 @@ tasks:
     cache:
       ttl: 7 days
 
+  - key: captain
+    call: rwx/install-captain 1.2.0
+
   - key: nightly-pytest
-    use: [code, deps-dev]
-    run: uv run pytest -q
+    use: [code, deps-dev, captain]
+    run: |
+      captain run reflex-starter-template-pytest-nightly \
+        --command "uv run pytest -q --report-log=pytest-results.json" \
+        --retry-command "uv run pytest -q --report-log=pytest-results.json {{ tests }}" \
+        --retries 2 \
+        --test-results pytest-results.json \
+        --print-summary
 
   - key: nightly-reflex-export
     use: [code, deps-dev]

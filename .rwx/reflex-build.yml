@@ -40,7 +40,7 @@ tasks:
   - key: code
     call: git/clone 2.2.0
     with:
-      repository: ${{ init.repository }}
+      repository: https://github.com/elviskahoro/reflex-starter-template.git
       ref: ${{ init.commit-sha }}
       fetch-full-depth: true
       preserve-git-dir: true
@@ -65,8 +65,21 @@ tasks:
       echo "$PWD/.venv/bin" >> $RWX_ENV/PATH
       echo "VIRTUAL_ENV=$PWD/.venv" >> $RWX_ENV/VIRTUAL_ENV
 
+  # Reflex's own bun download from GitHub releases returns 504 on RWX runners;
+  # install a pinned bun the same way frontend.yml does so reflex finds it.
+  - key: bun-install
+    use: [deps]
+    run: |
+      set -euo pipefail
+      script="$(mktemp)"
+      trap 'rm -f "${script}"' EXIT
+      curl -fsSL https://bun.sh/install -o "${script}"
+      echo "04882bf41679d49d9af108657a1e5515bf04fdf2940d12c0d0b1e5d79dc53be8  ${script}" | sha256sum -c -
+      bash "${script}" "bun-v1.4.3"
+      echo "$HOME/.bun/bin" >> $RWX_ENV/PATH
+
   - key: reflex-export
-    use: [code, deps]
+    use: [code, deps, bun-install]
     run: |
       uv run reflex init
       uv run reflex export --frontend-only

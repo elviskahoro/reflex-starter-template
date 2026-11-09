@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M6ZX186NNV5DWSKC0PXMWPGW",
+  "session_id": "1ed380ba-5cfd-4a99-966b-051818338057",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-09T10:18:05.991980397Z",
+  "branch": "conductor/reflex-starter-template-vite-alerts",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "README.md",
+    "reflex.lock/bun.lock",
+    "reflex.lock/package.json"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "c54fb55fe9d7",
+  "checkpoint_transcript_start": 124,
+  "transcript_lines_at_start": 124,
+  "compact_transcript_start": 21,
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 8880,
+    "cache_read_tokens": 545618,
+    "output_tokens": 3967,
+    "api_call_count": 10
+  },
+  "redaction": {
+    "replacements": 7,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 3,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 4,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 3
+  }
+}

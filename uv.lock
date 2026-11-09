@@ -914,6 +914,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "reflex" },
+    { name = "reflex-components-core" },
 ]
 
 [package.dev-dependencies]
@@ -928,7 +929,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "reflex", specifier = "==0.10.1" }]
+requires-dist = [
+    { name = "reflex", specifier = "==0.10.1" },
+    { name = "reflex-components-core", specifier = "==0.10.1" },
+]
 
 [package.metadata.requires-dev]
 dev = [

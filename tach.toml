@@ -10,11 +10,11 @@ include_string_imports = true
 # Three layers with strict ordering: production entrypoints -> pages ->
 # components. Layers are NOT closed (the closed-layer flag does not
 # allow per-module exemptions, and the smoke net in `tests/` needs to
-# construct status_card directly with literal inputs to keep regression
+# construct the agent blocks directly with literal inputs to keep regression
 # coverage honest). The intended `web.web -> web.pages.* ->
 # web.components.*` flow is still enforced at the visible-edges:
 # - `web.web.depends_on = ["web.pages.index"]` (entrypoint -> pages only)
-# - `web.components.status_card.visibility = ["web.pages.index", "tests"]`
+# - `web.components.agent.visibility = ["web.pages.index", "tests"]`
 #   (the component is reachable from the page module and from the
 #   test module, but NOT from `web.web` itself)
 # - tests' visibility is `[]`, so production code cannot accidentally
@@ -119,7 +119,11 @@ visibility = []
 [[modules]]
 path = "web.pages.index"
 layer = "pages"
-depends_on = ["web.components.status_card"]
+depends_on = [
+  "web.components.agent",
+  "web.components.core",
+  "web.components.ui",
+]
 depends_on_external = ["reflex"]
 # `tests` reaches this page module directly because layers are open
 # (see `layers` above for why). `web.web` drives the same `page`
@@ -133,19 +137,33 @@ depends_on = []
 depends_on_external = []
 visibility = []
 
-# Reusable component: takes state and handlers as arguments, imports no page.
+# Agent-facing blocks composed from native ui; import no page.
 [[modules]]
-path = "web.components.status_card"
+path = "web.components.agent"
+layer = "components"
+depends_on = ["web.components.core", "web.components.ui"]
+depends_on_external = ["reflex"]
+visibility = ["web.pages.index", "tests"]
+
+# Vendored native primitives (https://github.com/elviskahoro/native).
+[[modules]]
+path = "web.components.ui"
+layer = "components"
+depends_on = ["web.components.core"]
+depends_on_external = ["reflex", "reflex_components_core"]
+visibility = ["web.pages.index", "web.components.agent", "tests"]
+
+[[modules]]
+path = "web.components.core"
 layer = "components"
 depends_on = []
 depends_on_external = ["reflex"]
-# `tests` joins this visibility so the smoke net can call status_card
-# directly with literal inputs (verifying `EventType`, `rx.Component`
-# return, etc.). Production modules (`web.pages.index`) reach the
-# component via the `depends_on = [...]` declaration on the page
-# itself; nothing in `web.web` is allowed here because visibility
-# does not list it.
-visibility = ["web.pages.index", "tests"]
+visibility = [
+  "web.pages.index",
+  "web.components.agent",
+  "web.components.ui",
+  "tests",
+]
 
 [[interfaces]]
 # Modules have no public members unless an explicit interface below exposes them.
@@ -170,14 +188,34 @@ expose = ["app"]
 visibility = ["tests"]
 exclusive = true
 
+# Vendored native primitives expose their whole surface (copy-paste model).
 [[interfaces]]
-from = ['web\.components\.status_card']
-expose = ["status_card"]
+from = ['web\.components\.ui.*', 'web\.components\.core.*']
+expose = [".*"]
+visibility = [
+  "web.pages.index",
+  "web.components.agent",
+  "web.components.ui",
+  "web.components.core",
+  "tests",
+]
+exclusive = true
+
+[[interfaces]]
+from = ['web\.components\.agent']
+expose = [
+  "command_block",
+  "feature_card",
+  "prompt_block",
+  "section",
+  "theme_toggle",
+  "tool_call",
+]
 visibility = ["web.pages.index", "tests"]
 exclusive = true
 
 # Smoke tests are layer-peer entrypoints. They can reach
-# web.pages.index and web.components.status_card directly because
+# web.pages.index and web.components.agent directly because
 # layers are open (see `layers` above). Production modules cannot
 # accidentally import `tests/` because its `visibility = []` excludes
 # everything from the production module graph. pytest is not in
@@ -188,6 +226,6 @@ exclusive = true
 [[modules]]
 path = "tests"
 layer = "entrypoints"
-depends_on = ["web.pages.index", "web.components.status_card", "web.web"]
+depends_on = ["web.pages.index", "web.components.agent", "web.web"]
 depends_on_external = ["reflex"]
 visibility = []

@@ -10,11 +10,11 @@ include_string_imports = true
 # Three layers with strict ordering: production entrypoints -> pages ->
 # components. Layers are NOT closed (the closed-layer flag does not
 # allow per-module exemptions, and the smoke net in `tests/` needs to
-# construct status_card directly with literal inputs to keep regression
+# construct the agent blocks directly with literal inputs to keep regression
 # coverage honest). The intended `web.web -> web.pages.* ->
 # web.components.*` flow is still enforced at the visible-edges:
 # - `web.web.depends_on = ["web.pages.index"]` (entrypoint -> pages only)
-# - `web.components.status_card.visibility = ["web.pages.index", "tests"]`
+# - `web.components.agent.visibility = ["web.pages.index", "tests"]`
 #   (the component is reachable from the page module and from the
 #   test module, but NOT from `web.web` itself)
 # - tests' visibility is `[]`, so production code cannot accidentally
@@ -215,7 +215,7 @@ visibility = ["web.pages.index", "tests"]
 exclusive = true
 
 # Smoke tests are layer-peer entrypoints. They can reach
-# web.pages.index and web.components.status_card directly because
+# web.pages.index and web.components.agent directly because
 # layers are open (see `layers` above). Production modules cannot
 # accidentally import `tests/` because its `visibility = []` excludes
 # everything from the production module graph. pytest is not in

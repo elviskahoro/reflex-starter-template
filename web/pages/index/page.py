@@ -1,9 +1,14 @@
 """Index page: Elvis Kahoro's Reflex starter template, agent-first."""
 
+# reflex's factory members (rx.el.*, rx.foreach, rx.toast.provider) are typed
+# partially Unknown; suppress member-Unknown here as web/web.py does per-line.
+# pyright: reportUnknownMemberType=false
+
 from __future__ import annotations
 
 import asyncio
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import reflex as rx
 
@@ -27,6 +32,9 @@ from web.components.ui.marker import marker
 from web.components.ui.message import message
 from web.components.ui.separator import separator
 from web.components.ui.tabs import tabs
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
 
 # (tool, arguments, result) rows replayed by the live "agent run" demo.
 _SCRIPT: tuple[tuple[str, str, str], ...] = (
@@ -61,7 +69,7 @@ class IndexState(rx.State):
     steps: list[dict[str, str]] = []  # noqa: RUF012  # reflex state vars are per-instance
 
     @rx.event
-    async def run_agent(self) -> object:
+    async def run_agent(self) -> AsyncGenerator[None, None]:
         """Replay a scripted agent run, streaming each tool call to the UI."""
         if self.running:
             return
@@ -177,6 +185,16 @@ def _features() -> rx.Component:
     )
 
 
+def _render_step(step: dict[str, str]) -> rx.Component:
+    """Render one streamed tool-call row from backend state."""
+    return tool_call(
+        step["name"],
+        step["args"],
+        step["result"],
+        step["status"],
+    )
+
+
 def _transcript() -> rx.Component:
     """Static conversation plus the live tool-call stream."""
     return card.root(
@@ -222,15 +240,7 @@ def _transcript() -> rx.Component:
                             ),
                             variant="muted",
                         ),
-                        rx.foreach(
-                            IndexState.steps,
-                            lambda step: tool_call(
-                                step["name"],
-                                step["args"],
-                                step["result"],
-                                step["status"],
-                            ),
-                        ),
+                        rx.foreach(IndexState.steps, _render_step),
                         rx.cond(
                             IndexState.count > 0,
                             marker.root(
@@ -296,6 +306,9 @@ def _commands() -> rx.Component:
             command_block("uv run pytest -q", "Smoke tests (network tests skipped)"),
             command_block("uv run tach check", "Module boundaries"),
             command_block("uv run tach check-external", "Declared vs imported deps"),
+            command_block("trunk check --all", "Lint gate (merge-blocking)"),
+            command_block("rwx run .rwx/pyrefly.yml --wait", "Type check (pyrefly)"),
+            command_block("rwx run .rwx/pyright.yml --wait", "Type check (pyright)"),
             class_name="flex flex-col gap-2",
         ),
         anchor="verify",

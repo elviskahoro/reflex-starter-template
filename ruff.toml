@@ -19,6 +19,14 @@ ignore = [
 # Reflex event handlers are called positionally; `value=` would break handlers with other parameter names.
 "web/components/**" = ["FBT003"]
 
+# Vendored verbatim from elviskahoro/native (copy-paste model; see
+# web/components/NATIVE_LICENSE.md and the matching carve-outs in tach.toml
+# and pyrefly.toml). Deliberately unlinted: the kit follows upstream's house
+# style, so repo rules here would fail on every upstream sync. Import and
+# build breakage is still caught by pytest, tach, and `reflex export`.
+"web/components/ui/**" = ["ALL"]
+"web/components/core/**" = ["ALL"]
+
 # Smoke tests: pytest asserts are the substrate (S101); test names carry
 # the intent without per-method docstrings (D102/D103).
 "tests/**" = ["D102", "D103", "S101"]

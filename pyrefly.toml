@@ -1,4 +1,9 @@
 project-includes = ["rxconfig.py", "web"]
+# Vendored verbatim from elviskahoro/native (copy-paste model; see
+# web/components/NATIVE_LICENSE.md and the matching carve-outs in ruff.toml
+# and tach.toml). Excluded so the 0-error baseline holds without rewriting
+# upstream files on every sync.
+project-excludes = ["web/components/ui/**", "web/components/core/**"]
 python-version = "3.11"
 untyped-def-behavior = "check-and-infer-return-any"
 permissive-ignores = false

@@ -3,6 +3,7 @@
   "venvPath": ".",
   "venv": ".venv",
   "include": ["rxconfig.py", "web"],
+  "ignore": ["web/components/ui", "web/components/core"],
   "typeCheckingMode": "strict",
   "reportMissingImports": "error",
   "reportMissingModuleSource": "error",

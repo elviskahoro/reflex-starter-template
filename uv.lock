@@ -931,7 +931,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "reflex", specifier = "==0.10.0" },
-    { name = "reflex-components-core" },
+    { name = "reflex-components-core", specifier = "==0.10.0" },
 ]
 
 [package.metadata.requires-dev]

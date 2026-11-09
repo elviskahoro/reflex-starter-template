@@ -1,5 +1,9 @@
 """Reusable agent-facing blocks: copyable prompts, commands, tool calls."""
 
+# rx.el.* factories are typed partially Unknown (same reason web/web.py
+# carries a per-line ignore); suppress member-Unknown for this file.
+# pyright: reportUnknownMemberType=false
+
 from __future__ import annotations
 
 import reflex as rx

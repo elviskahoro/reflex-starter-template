@@ -283,3 +283,5 @@ Run these in order from a fresh clone. Each must succeed before the next.
 12. `curl -f https://<domain>/ping` → prints `pong`
 
 If any step fails, stop and report the failing step number, the command, and the full error output. Do not attempt destructive recovery (do not run `railway down`, `git reset --hard`, or delete the Railway project) without explicit user confirmation.
+
+<!-- dummy change to verify RWX check names; do not merge -->

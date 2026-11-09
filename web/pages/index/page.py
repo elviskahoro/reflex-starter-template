@@ -1,4 +1,4 @@
-"Index page: Elvis Kahoro's Reflex starter template, agent-first."
+"""Index page: Elvis Kahoro's Reflex starter template, agent-first."""
 
 from __future__ import annotations
 
@@ -38,8 +38,8 @@ _SCRIPT: tuple[tuple[str, str, str], ...] = (
 _BOOTSTRAP_PROMPT = (
     "Read AGENTS.md and README.md first. Then replace the example page in "
     "web/pages/index with <my product>. Build UI only from web/components/ui "
-    "(the shared UI kit) and add new modules to tach.toml. Verify with `uv run tach check` "
-    "and `uv run pytest -q` before you stop."
+    "(the shared UI kit) and add new modules to tach.toml. Verify with "
+    "`uv run tach check` and `uv run pytest -q` before you stop."
 )
 _ADD_COMPONENT_PROMPT = (
     "Add a <component> from https://native.buridan.dev/docs/components to "
@@ -114,7 +114,9 @@ def _hero() -> rx.Component:
             ),
         ),
         rx.el.p(
-            "Agents write code fast but guess at your conventions. This template writes the conventions down, enforces them, and gives the agent a way to check its own work, so its first attempt is one you can merge.",
+            "Agents write code fast but guess at your conventions. This template "
+            "writes the conventions down, enforces them, and gives the agent a way to "
+            "check its own work, so its first attempt is one you can merge.",
             class_name="max-w-2xl text-balance text-center text-muted-foreground",
         ),
         rx.el.div(
@@ -142,27 +144,32 @@ def _hero() -> rx.Component:
 def _features() -> rx.Component:
     return section(
         "Why it works with agents",
-        "Agents fail when a repo is ambiguous. Each choice here removes one kind of ambiguity.",
+        "Agents fail when a repo is ambiguous. Each choice here removes one kind of "
+        "ambiguity.",
         rx.el.div(
             feature_card(
                 "File02Icon",
                 "One source of instructions",
-                "Without a single written workflow, every agent invents its own. AGENTS.md and CLAUDE.md point to one guide.",
+                "Without a single written workflow, every agent invents its own. "
+                "AGENTS.md and CLAUDE.md point to one guide.",
             ),
             feature_card(
                 "HexagonIcon",
                 "Mistakes fail loudly",
-                "Agents drift into tangled imports. tach.toml pins the layers, so a wrong import is an error, not a review comment.",
+                "Agents drift into tangled imports. tach.toml pins the layers, so a "
+                "wrong import is an error, not a review comment.",
             ),
             feature_card(
                 "CheckmarkBadge01Icon",
                 "Checkable work",
-                "An agent that can run a fast test and a type check catches its own bugs before you see them.",
+                "An agent that can run a fast test and a type check catches its own "
+                "bugs before you see them.",
             ),
             feature_card(
                 "PaintBucketIcon",
                 "One place to restyle",
-                "Colors, radius, and fonts live in CSS variables, so a redesign is a one-file change an agent can't half-finish.",
+                "Colors, radius, and fonts live in CSS variables, so a redesign is a "
+                "one-file change an agent can't half-finish.",
             ),
             class_name="grid gap-4 sm:grid-cols-2 lg:grid-cols-4",
         ),
@@ -176,7 +183,9 @@ def _transcript() -> rx.Component:
         card.header(
             card.title("What the agent sees"),
             card.description(
-                "Showing the work builds trust. This trace streams each tool call from backend state, so you see what the agent did, not just the result.",
+                "Showing the work builds trust. This trace streams each tool call "
+                "from backend state, so you see what the agent did, not just the "
+                "result.",
             ),
             card.action(
                 button(
@@ -208,7 +217,8 @@ def _transcript() -> rx.Component:
                         message.header("Agent"),
                         bubble.root(
                             bubble.content(
-                                "On it. Reading AGENTS.md, then verifying boundaries and tests.",
+                                "On it. Reading AGENTS.md, then verifying boundaries "
+                                "and tests.",
                             ),
                             variant="muted",
                         ),
@@ -247,7 +257,8 @@ def _transcript() -> rx.Component:
 def _patterns() -> rx.Component:
     return section(
         "Prompts that stay on the rails",
-        "Vague asks produce off-pattern code. These name the files, the constraint, and the check, for the three jobs agents get most.",
+        "Vague asks produce off-pattern code. These name the files, the constraint, "
+        "and the check, for the three jobs agents get most.",
         tabs.root(
             tabs.list(
                 tabs.trigger("Bootstrap", value="bootstrap"),
@@ -277,7 +288,8 @@ def _patterns() -> rx.Component:
 def _commands() -> rx.Component:
     return section(
         "Done means verified",
-        "An agent that stops without running these is guessing. Exact commands leave nothing to improvise.",
+        "An agent that stops without running these is guessing. Exact commands leave "
+        "nothing to improvise.",
         rx.el.div(
             command_block("uv sync --group dev", "Install locked dependencies"),
             command_block("uv run reflex run", "Start frontend and backend"),
@@ -299,7 +311,11 @@ def _faq() -> rx.Component:
                 accordion.trigger("Why one UI kit?"),
                 accordion.panel(
                     rx.el.p(
-                        "Ad-hoc markup makes every page look different and every review longer. All UI comes from web/components/ui (the UI kit linked below), so new pages match by construction. Add missing pieces from native.buridan.dev instead of hand-rolling them.",
+                        "Ad-hoc markup makes every page look different and every "
+                        "review longer. All UI comes from web/components/ui (the UI "
+                        "kit linked below), so new pages match by construction. Add "
+                        "missing pieces from native.buridan.dev instead of "
+                        "hand-rolling them.",
                     ),
                 ),
                 name="faq",
@@ -309,7 +325,9 @@ def _faq() -> rx.Component:
                 accordion.trigger("Why CSS variables for styling?"),
                 accordion.panel(
                     rx.el.p(
-                        "Hard-coded colors scatter across files and can't be changed safely. Components read tokens from assets/globals.css, so light/dark and any retheme work everywhere at once.",
+                        "Hard-coded colors scatter across files and can't be changed "
+                        "safely. Components read tokens from assets/globals.css, so "
+                        "light/dark and any retheme work everywhere at once.",
                     ),
                 ),
                 name="faq",
@@ -318,7 +336,9 @@ def _faq() -> rx.Component:
                 accordion.trigger("Why declare every module?"),
                 accordion.panel(
                     rx.el.p(
-                        "Undeclared modules are how architecture erodes unnoticed. Declaring each one in tach.toml makes `uv run tach check` fail the moment an agent crosses a boundary.",
+                        "Undeclared modules are how architecture erodes unnoticed. "
+                        "Declaring each one in tach.toml makes `uv run tach check` "
+                        "fail the moment an agent crosses a boundary.",
                     ),
                 ),
                 name="faq",

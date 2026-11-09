@@ -59,7 +59,9 @@ def feature_card(icon: str, title: str, body: str) -> rx.Component:
         card.header(
             rx.el.div(
                 hi(icon, class_name="size-5"),
-                class_name="mb-2 flex size-9 items-center justify-center rounded-lg bg-muted",
+                class_name=(
+                    "mb-2 flex size-9 items-center justify-center rounded-lg bg-muted"
+                ),
             ),
             card.title(title),
             card.description(body),

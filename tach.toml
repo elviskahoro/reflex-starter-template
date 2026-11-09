@@ -119,7 +119,11 @@ visibility = []
 [[modules]]
 path = "web.pages.index"
 layer = "pages"
-depends_on = ["web.components.agent", "web.components.core", "web.components.ui"]
+depends_on = [
+  "web.components.agent",
+  "web.components.core",
+  "web.components.ui",
+]
 depends_on_external = ["reflex"]
 # `tests` reaches this page module directly because layers are open
 # (see `layers` above for why). `web.web` drives the same `page`
@@ -154,7 +158,12 @@ path = "web.components.core"
 layer = "components"
 depends_on = []
 depends_on_external = ["reflex"]
-visibility = ["web.pages.index", "web.components.agent", "web.components.ui", "tests"]
+visibility = [
+  "web.pages.index",
+  "web.components.agent",
+  "web.components.ui",
+  "tests",
+]
 
 [[interfaces]]
 # Modules have no public members unless an explicit interface below exposes them.
@@ -183,12 +192,25 @@ exclusive = true
 [[interfaces]]
 from = ['web\.components\.ui.*', 'web\.components\.core.*']
 expose = [".*"]
-visibility = ["web.pages.index", "web.components.agent", "web.components.ui", "web.components.core", "tests"]
+visibility = [
+  "web.pages.index",
+  "web.components.agent",
+  "web.components.ui",
+  "web.components.core",
+  "tests",
+]
 exclusive = true
 
 [[interfaces]]
 from = ['web\.components\.agent']
-expose = ["command_block", "feature_card", "prompt_block", "section", "theme_toggle", "tool_call"]
+expose = [
+  "command_block",
+  "feature_card",
+  "prompt_block",
+  "section",
+  "theme_toggle",
+  "tool_call",
+]
 visibility = ["web.pages.index", "tests"]
 exclusive = true
 

@@ -1,0 +1,8 @@
+create github issues for
+he first two RWX runs failed in reflex-export. Reflex’s own bun download from GitHub returned 504 on the runner. I fixed it by adding a bun-install task to .rwx/preview.yml, copied from frontend.yml. It installs bun v1.4.3 from bun.sh with the checksum check, and reflex-export now depends on it.
+Because reflex-export now uses that task, it is no longer byte-identical to reflex-build.yml. The comment at the top of preview.yml says to keep them in step so RWX can reuse the cache. reflex-build.yml will likely hit the same 504, so you may want the same fix there.
+.rwx/preview.yml is modified and uncommitted. The preview ran from a patch of the working tree, so nothing was pushed or committed. rwx lint still warns that git/clone 2.2.0 is outdated (2.4.0 is current); I left it.
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>

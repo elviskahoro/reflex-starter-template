@@ -8,10 +8,10 @@ on:
         event-type: push
         before-sha: ${{ event.github.push.before }}
       if: ${{ event.git.branch == 'main' || starts-with(event.git.branch, 'trunk-merge/') }}
-      # Custom status check so merge.required_statuses (.trunk/trunk.yaml)
-      # can require this task by a name that posts identically on PR heads
-      # and trunk-merge/** batch refs; the default per-run status renames
-      # itself per trigger. See .rwx/trunk-check.yml for the full rationale.
+      # Name the default per-run status check so merge.required_statuses
+      # (.trunk/trunk.yaml) can require this pipeline by a name that posts
+      # identically on PR heads and trunk-merge/** batch refs. See
+      # .rwx/trunk-check.yml for the full rationale.
       status-checks:
         name: frontend-deps
     pull_request:

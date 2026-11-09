@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M704FYP3JBG60NGBEXP0902V",
+  "session_id": "f26634d0-09be-4761-96a5-167eacc0093f",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-09T12:28:26.164867146Z",
+  "branch": "w-1100/reflex-starter-template-issue-59",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    ".rwx/frontend.yml",
+    ".rwx/preview.yml",
+    ".rwx/pyrefly.yml",
+    ".rwx/pyright.yml",
+    ".rwx/reflex-build.yml",
+    ".rwx/smoke-nightly.yml",
+    ".rwx/tests.yml",
+    ".rwx/trunk-check.yml"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "c09d1226b6a7",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 32058,
+    "cache_read_tokens": 242545,
+    "output_tokens": 1608,
+    "api_call_count": 9
+  },
+  "redaction": {
+    "replacements": 5,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 3,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 2,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 1
+  }
+}

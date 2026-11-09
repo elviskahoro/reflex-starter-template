@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M6ZWZR8FXSEJEF1921EX1K0D",
+  "session_id": "3ad24f75-76b4-4ca7-9281-c7dfe1f138a5",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-09T10:17:16.718968114Z",
+  "branch": "w-1057/github-actions-check-names",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".rwx/frontend.yml",
+    ".rwx/preview.yml",
+    ".rwx/reflex-build.yml",
+    ".rwx/tests.yml",
+    ".rwx/trunk-check.yml"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "9b4c5a438090",
+  "checkpoint_transcript_start": 135,
+  "transcript_lines_at_start": 135,
+  "compact_transcript_start": 21,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 19368,
+    "cache_read_tokens": 281239,
+    "output_tokens": 1641,
+    "api_call_count": 6
+  },
+  "redaction": {
+    "replacements": 8,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 3,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 5,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 4
+  }
+}

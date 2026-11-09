@@ -1,0 +1,107 @@
+from typing import Any
+
+import reflex as rx
+from reflex.components.component import ComponentNamespace
+
+from ..core.core import CoreComponent, cn
+
+
+class ClassNames:
+    ROOT = "w-full flex flex-col gap-3 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+
+    ITEM_ROOT = (
+        "group relative inline-flex size-4 shrink-0 cursor-pointer items-center "
+        "justify-center rounded-full border border-input "
+        "has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 "
+        "has-[:focus-visible]:border-ring has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50 "
+        "has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-3 "
+        "has-[[aria-invalid=true]]:ring-destructive/20 "
+        "dark:bg-input/30 "
+        "has-[:checked]:border-primary "
+        "peer-has-[[data-slot=field-content]]:mt-0.5 [&:has(~[data-slot=field-content])]:mt-0.5"
+    )
+
+    ITEM_INPUT = "peer sr-only"
+
+    ITEM_INDICATOR = "hidden peer-checked:flex items-center justify-center"
+
+    ITEM_INDICATOR_DOT = "size-2 rounded-full bg-primary"
+
+    KNOWN_INPUT_PROPS = (
+        "checked",
+        "default_checked",
+        "disabled",
+        "required",
+        "id",
+    )
+
+
+class RadioGroupRoot(CoreComponent):
+    @classmethod
+    def create(
+        cls,
+        *children: Any,
+        disabled: bool = False,
+        **props: Any,
+    ) -> rx.Component:
+        custom_classes = props.pop("class_name", "")
+        props["data-slot"] = "radio-group"
+        role = props.pop("role", "radiogroup")
+        custom_attrs = props.pop("custom_attrs", {})
+        custom_attrs.setdefault("role", role)
+        props["custom_attrs"] = custom_attrs
+        if disabled:
+            props["disabled"] = True
+        cls.set_class_name(cn(ClassNames.ROOT, custom_classes), props)
+        return rx.el.fieldset(*children, **props)
+
+
+class RadioGroupItem(CoreComponent):
+    @classmethod
+    def create(
+        cls,
+        *children: Any,
+        name: str,
+        value: str,
+        **props: Any,
+    ) -> rx.Component:
+        custom_classes = props.pop("class_name", "")
+
+        input_props: dict[str, Any] = {"name": name, "value": value}
+        for key in list(props.keys()):
+            if key in ClassNames.KNOWN_INPUT_PROPS or key.startswith(
+                ("on_", "data-", "aria-"),
+            ):
+                input_props[key] = props.pop(key)
+
+        input_props["type"] = "radio"
+        input_props["data-slot"] = "radio-group-item-input"
+        input_props["class_name"] = ClassNames.ITEM_INPUT
+
+        props["data-slot"] = "radio-group-item"
+
+        if not children:
+            children = (RadioGroupIndicator.create(),)
+
+        cls.set_class_name(cn(ClassNames.ITEM_ROOT, custom_classes), props)
+        return rx.el.label(rx.el.input(**input_props), *children, **props)
+
+
+class RadioGroupIndicator(CoreComponent):
+    @classmethod
+    def create(cls, *children: Any, **props: Any) -> rx.Component:
+        if len(children) == 0:
+            children = (rx.el.span(class_name=ClassNames.ITEM_INDICATOR_DOT),)
+        props["data-slot"] = "radio-group-item-indicator"
+        cls.set_class_name(ClassNames.ITEM_INDICATOR, props)
+        return rx.el.span(*children, **props)
+
+
+class RadioGroup(ComponentNamespace):
+    root = staticmethod(RadioGroupRoot.create)
+    item = staticmethod(RadioGroupItem.create)
+    indicator = staticmethod(RadioGroupIndicator.create)
+    class_names = ClassNames
+
+
+radio_group = RadioGroup()

@@ -1,0 +1,17 @@
+# Elvis Kahoro's Reflex Starter Template
+
+> A Reflex starter that documents and enforces its conventions so AI agents can extend it correctly on the first try. UI kit: https://github.com/elviskahoro/native
+
+## Start here
+- AGENTS.md / CLAUDE.md: workflow and verification rules
+- README.md: layout, deployment, commands
+
+## Conventions
+- UI primitives: web/components/ui (native). Agent blocks: web/components/agent.
+- Theming: CSS variables in assets/globals.css only.
+- Layers: web.web -> web.pages.* -> web.components.* (tach.toml).
+
+## Verify
+- uv run pytest -q
+- uv run tach check
+- uv run tach check-external

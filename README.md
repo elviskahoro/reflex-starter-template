@@ -1,4 +1,6 @@
-# Reflex Starter Template
+# Elvis Kahoro's Reflex Starter Template
+
+Agents write code quickly but guess at conventions, and every guess is something a human has to review and undo. This template writes the conventions down and enforces them: one UI kit ([native](https://github.com/elviskahoro/native), vendored in `web/components/ui`) so pages match by construction, CSS-variable theming in `assets/globals.css` so a redesign is one file, `tach.toml` so wrong imports fail, and a short test loop so an agent can check its own work. The landing page (`web/pages/index`) demonstrates each pattern with copyable prompts and a streamed tool-call trace.
 
 Production-ready [Reflex](https://reflex.dev) starter that deploys to [Railway](https://railway.app) via Docker. The frontend is pre-built into static assets at image build time and served by Caddy; the Reflex backend runs on a separate port and is reverse-proxied for `_event` and `_upload` routes.
 
@@ -25,18 +27,20 @@ The split-process model (Caddy + backend, supervised by `entrypoint.sh`) is what
 ├── Dockerfile             # Alpine + Python 3.11 + Node + Caddy; pre-builds frontend
 ├── DEPLOYMENT.md          # Railway-specific notes (kept for reference)
 ├── README.md              # This file
-├── assets/                # Static assets (favicon, etc.)
+├── assets/                # favicon, globals.css (native theme tokens), llms.txt
 ├── entrypoint.sh          # Starts backend + Caddy, supervises both
 ├── pyproject.toml         # Python project; pinned reflex version
 ├── railway.toml           # Railway build/deploy config
-├── rxconfig.py            # Reflex config: app_name="web", sitemap plugin, no watermark
+├── rxconfig.py            # Reflex config: app_name="web", sitemap + Tailwind v4 plugins, no watermark
 ├── symlink/               # Git submodule (https://github.com/elviskahoro/skills-reflex)
 ├── uv.lock                # uv lockfile (frozen install)
 └── web/                   # Reflex app package (matches app_name in rxconfig.py)
     ├── __init__.py
     ├── web.py             # rx.App() + page registration
     ├── components/
-    │   └── status_card/   # Example reusable component (state passed in as arguments)
+    │   ├── ui/            # Vendored native primitives (button, card, tabs, message, ...)
+    │   ├── core/          # Native `cn` helper and HugeIcon wrapper
+    │   └── agent/         # Agent-facing blocks (prompt_block, tool_call, command_block)
     └── pages/
         └── index/
             ├── __init__.py

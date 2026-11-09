@@ -15,12 +15,18 @@ on:
       # default and custom checks below post stable contexts on PR heads and
       # trunk-merge/** batch refs alike. Task lists stay per-trigger: a task
       # skipped on this trigger reports its custom check as failed.
+      #
+      # Three checks post from this file:
+      # - lint: only the Trunk lint task (trunk-check-push / -pr).
+      # - tach-external: only the dependency-declaration check.
+      # - trunk-check-all-tasks: roll-up of every task in this run; it exists
+      #   only to give the default status a stable name. Do not require it.
       status-checks:
         default:
-          name: trunk-check-run
+          name: trunk-check-all-tasks
         custom:
           - tasks: [trunk-check-push]
-            name: trunk-check
+            name: lint
           - tasks: [tach-external]
             name: tach-external
     pull_request:
@@ -34,10 +40,10 @@ on:
       # trunk-check-pr, the variant that runs on pull requests.
       status-checks:
         default:
-          name: trunk-check-run
+          name: trunk-check-all-tasks
         custom:
           - tasks: [trunk-check-pr]
-            name: trunk-check
+            name: lint
           - tasks: [tach-external]
             name: tach-external
   cli:

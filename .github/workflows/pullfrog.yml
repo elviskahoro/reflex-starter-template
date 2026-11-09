@@ -36,8 +36,8 @@ jobs:
         uses: pullfrog/pullfrog@ad4283a862b8377cb525a0f5bf30f17c023b18ea # v0.1.98
         with:
           prompt: ${{ inputs.prompt }}
-          # GLM 5.3 Flash via Fireworks -- same family roborev uses in gtm-sdk
-          # (.roborev.toml: fireworks/accounts/fireworks/models/glm-5p3).
+          # GLM 5.3 Flash via Fireworks -- same model roborev uses in gtm-sdk
+          # (.roborev.toml: fireworks/accounts/fireworks/models/glm-5p3-flash).
           # Raw models.dev specifier; runs through OpenCode on BYOK.
           model: fireworks-ai/accounts/fireworks/models/glm-5p3-flash
         env:

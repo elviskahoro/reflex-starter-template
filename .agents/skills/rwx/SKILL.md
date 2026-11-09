@@ -89,7 +89,7 @@ Persistent cloud environments built from run definitions; local changes sync up 
 
 ## Full logs
 
-Use `rwx logs <task-id> --auto-extract --json` and grep the downloaded files (e.g. for `ERROR`) rather than pasting logs into context.
+Logs are extracted by default — use `rwx logs <task-id> --json --output /tmp/logs` and grep the downloaded files (e.g. for `ERROR`) rather than pasting logs into context.
 
 ## Container images
 

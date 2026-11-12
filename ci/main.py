@@ -65,15 +65,15 @@ async def _export_cache(ctr: dagger.Container) -> None:
 
 async def test(pytest_args: list[str]) -> None:
     """Run pytest in the container and propagate its exit code."""
-    ctr = _base().with_exec(
+    ctr = _base().with_exec(["mkdir", "-p", "/results"]).with_exec(
         [
             "/opt/venv/bin/pytest", "-q",
-            "--report-log=/tmp/pytest-results.json", *pytest_args,
+            "--report-log=/results/pytest-results.json", *pytest_args,
         ],
         expect=dagger.ReturnType.ANY,
     )  # fmt: skip
     results_dir = Path(os.environ.get("CI_RESULTS_DIR", str(ROOT)))
-    await ctr.file("/tmp/pytest-results.json").export(  # noqa: S108  # container-internal path
+    await ctr.file("/results/pytest-results.json").export(
         str(results_dir / "pytest-results.json"),
     )
     await _export_cache(ctr)

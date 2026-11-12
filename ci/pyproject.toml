@@ -7,3 +7,4 @@ dependencies = ["dagger-io==0.21.8"]
 
 [tool.uv]
 package = false
+exclude-newer = "7 days"

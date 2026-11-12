@@ -1,0 +1,227 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /home/vercel-sandbox/reflex-starter-template directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+Conductor shows the PR for whichever branch is checked out. After you open a PR from a different branch, or a PR stack, check out that PR's branch (for a stack, the top-most branch) so Conductor shows it.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+Save screenshots under `.context/` and embed them inline in the final response using Markdown image syntax, for example `![Screenshot](</home/vercel-sandbox/reflex-starter-template/.context/screenshot.png>)`.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+<system_instruction>
+This workspace is running in a VM in the cloud. The user connects using the Conductor app. The user will typically use this machine for a single task (sometimes involving multiple agents), then move on to a new machine. Don't bother using any long-term memory systems that are file-backed (e.g., `.../.claude/.../memory`).
+
+The user can turn "Sync files" on or off in the Conductor app. While it's on, this workspace's files sync one way to the user's Mac: changes made here appear on the Mac, but changes made on the Mac never sync back.
+
+To access the user's Mac, use the RunLocalCommand tool if you have it (search your tools for it). If you don't, you have no Mac access. If you need a resource from the user's local machine that is not present in the cloud workspace, explain why. 
+This cloud workspace is a Vercel sandbox running Amazon Linux 2023 (x86_64). You are user vercel-sandbox with passwordless sudo. Install packages with dnf (sudo dnf install -y <pkg>). Google Chrome is preinstalled at `google-chrome` if you need a browser.
+
+GitHub's PR stacking extension is installed on this machine. It can be used to create chains of small, reviewable PRs that build on each other. You can run `gh stack` for instructions.
+
+From this environment you can also drive Conductor itself: search cloud workspaces, create cloud workspaces, start agent sessions, send them prompts, read their replies, and share web pages or HTML files using preview URLs. Use the `conductor` CLI — run `conductor --help` for the full command reference and usage notes.
+The main Claude model families, from least to most capable, are sonnet, opus, and fable. The main OpenAI model families, from least to most capable, are gpt-5.6-luna, gpt-5.6-terra, gpt-5.6-sol, and gpt-6-astra. Run `conductor model` for every model id, effort level, and default per agent.
+</system_instruction>
+
+This repo has RWX pipelines in .rwx/. Apply the migration prompt below to it: move the pipelines to RWX compute with good caching and put the core logic in Dagger so the pipeline can run locally. Work on a branch, validate with `rwx lint` and `rwx run`, then open a PR. Follow the repo's CLAUDE.md/AGENTS.md. Report anything blocked.
+
+---
+# Migration prompt: RWX pipeline → RWX (cached prefix) + Dagger (portable core)
+
+> Paste everything below the line into an agent working in the target repo.
+> It is repo-agnostic. Do not edit it per repo; the agent discovers the stack.
+
+---
+
+## Role and goal
+
+You are migrating this repository's CI so that:
+
+1. **All Dagger logic lives in `ci/`** (a plain Dagger SDK program: no Dagger module). The same functions run **locally** and **in CI**.
+2. **RWX remains the orchestrator.** `.rwx/*.yml` caches every step it can with RWX's content-based cache (system packages, language runtimes, dependency installs, codegen, builds of unchanged inputs) and fans out in a DAG.
+3. **The last cacheable step is the toolchain core** (the actual tests, Bazel/Gradle/Cargo/etc. build, lint, typecheck) and that step **invokes Dagger** from `ci/`.
+4. **Local parity:** a developer with only Docker (or another Dagger-supported container runtime) and the `dagger` CLI can run `ci/run.sh all` (or the equivalent) and get the same result as CI, without RWX's cache.
+5. Behavior is preserved. Same checks, same pass/fail semantics, same triggers, same secrets handling.
+
+Do not start by writing code. Follow the phases in order and report at each gate.
+
+## Phase 0: Ground yourself in current docs (mandatory)
+
+Do not write RWX YAML or Dagger code from memory. Both tools change quickly.
+
+- Read the repo's `AGENTS.md` / `CLAUDE.md` and any `skills/` directory first. Repo instructions override this prompt.
+- RWX: check `rwx whoami`. If the repo has an `rwx` skill, read it. Otherwise install the official skills (`rwx-cloud/skills`: `rwx`, `migrate-from-gha`, `review-gha-migration`). Run `rwx docs pull /migrating/rwx-reference` and `rwx docs search "<topic>"` for anything unclear (caching, `filter`, `use`, `after`, `env`, `parallel`, artifacts, docker/background processes, sandboxes). Use Bash for docs, not WebFetch.
+- Dagger: the primary reference is the **client-libraries docs** (https://docs.dagger.io/reference/client-libraries): a plain program using the `dagger-io` SDK from PyPI, no module or config. `dagger/skill` (its `content/SKILL.md`) is a secondary read; it is module/workspace-oriented, so ignore anything in it that assumes a module. Also, **do not create a Dagger module and do not create any `dagger.toml` / `dagger.json` / module config.** Do not run `dagger init`, `dagger module install`, or `dagger generate`. Use the plain **Dagger SDK as a library inside an ordinary program** in `ci/`, run via `dagger run <command>` (`dagger run python ci/main.py <subcommand>`, or `dagger run uv run ci/main.py <subcommand>`). Read the current SDK docs for your language (`dagger run --help`, SDK install instructions) for exact API names. If the SDK docs differ from this prompt, the docs win; note the deviation.
+- Record exact versions (RWX CLI, Dagger CLI/engine, base images, language toolchains) in your notes. You will pin them.
+
+## Phase 1: Inventory the existing pipeline (read-only)
+
+Produce a table of every task in every `.rwx/*.yml` (and any leftover GitHub Actions workflow, Makefile, scripts, `package.json` scripts, Bazel targets, pre-commit config that CI relies on):
+
+| Task | Purpose | Inputs (files/globs) | Env/secrets | Depends on | Outputs/artifacts | Cacheable? | Currently slow? |
+
+Also capture: triggers, matrix/parallelism, services (databases, browsers, emulators), required secrets and which org they come from, artifact consumers, required status-check names (branch protection depends on them; do not rename without saying so), and the measured wall time per task from `rwx results` / `rwx runs list` if available.
+
+Classify every task into one of three layers:
+
+- **Layer A: Environment prep (RWX-native).** OS packages, language runtime, package-manager install, tool downloads, repo checkout slices, codegen. Deterministic given its inputs and slow to repeat. **Keep in RWX** so the content cache applies.
+- **Layer B: Fan-out/orchestration (RWX-native).** Parallel jobs, matrices, gating, notifications, deploy steps, anything needing RWX-only features or secrets that should not enter local runs.
+- **Layer C: Toolchain core (Dagger).** The step(s) whose logic a developer would also want to run locally: test suites, builds (Bazel, Gradle, Cargo, Go, Next, etc.), lint, typecheck, integration tests with service containers, packaging. **This moves into `ci/` as Dagger functions.**
+
+Gate 1: summarize the table and the proposed A/B/C split. Flag anything ambiguous. Continue unless something is genuinely blocking.
+
+## Phase 2: Design
+
+### 2.1 Layout
+
+```
+ci/
+  README.md           # how to run locally and in CI; cache behavior; env/secrets
+  main.py             # plain Python program using the Dagger SDK; subcommands per check
+  pyproject.toml      # ci/ deps only (dagger-io==X.Y.Z pinned) as ordinary Python packaging
+  uv.lock             # lockfile (or the repo's existing convention)
+  run.sh              # thin wrapper: `dagger run python ci/main.py "$@"`
+.rwx/
+  ci.yml              # Layer A + B tasks; final task(s) call Dagger
+```
+
+**No Dagger module and no Dagger config files (`dagger.toml`, `dagger.json`).** `pyproject.toml` for Python deps is allowed. The language is **Python**, regardless of the repo's primary language: use the Dagger Python SDK (`dagger-io`), with `ci/` as a Python project (own `pyproject.toml` + lockfile, or the repo's existing root one, pinned SDK and Python versions; prefer `uv` (match the repo's existing convention if it has one). `pyproject.toml` is fine for Python deps; the ban is only on Dagger's own config). Write one small, typed program (`ci/main.py`) whose CLI takes a subcommand per logical check (`test`, `lint`, `typecheck`, `build`, `bazel-test`, …) plus `all`. Entry point everywhere (local and RWX): `dagger run python ci/main.py <subcommand>`. **Version pairing:** pin the Dagger CLI and `dagger-io` in lockstep on the same release line (this org's working pipelines use the 0.21.x line, e.g. `dagger-io==0.21.8` with CLI `0.21.8`; CLI/SDK/engine skew surfaces as confusing runtime errors). On that line the entry point is `dagger run`. Dagger 1.0 (the current default install) renamed it to `dagger api with-session` (https://docs.dagger.io/migrate-to-v1), so if you re-pin to 1.x, update the entry point at every site in `ci/run.sh`, `.rwx/*.yml` and the docs. Wrap it in `ci/run.sh` or a Makefile/package-script target so the command is short.
+
+### 2.2 Principles for the Dagger program
+
+- **Hermetic and deterministic.** Pin base image digests/tags, toolchain versions, and package-manager lockfiles. No `latest`.
+- **Layer for cache.** Order operations least-to-most-changing: toolchain → dependency manifests/lockfiles only → install → full source → run. Mount only the files needed per step (use directory filters/ignore patterns; never mount `.git`, `node_modules`, build outputs, or `.context/` unless required).
+- **Cache volumes** for package managers and build tools (npm/pnpm/yarn store, pip/uv, Go mod/build, Cargo registry/target, Gradle, Bazel disk cache/output base, etc.). Use a stable cache-volume key per tool. Never put secrets or non-reproducible state in cache volumes.
+- **Secrets via Dagger `Secret` arguments**, never baked into layers, env literals, or logs. Read from env/file/command providers at the CLI boundary.
+- **No hidden host dependencies.** The program takes the repo path (default: repo root) and loads it as a Dagger `Directory` via the SDK host API. It must not rely on the caller's installed language toolchains.
+- **Services** (Postgres, Redis, browsers, emulators) as Dagger service containers with explicit health/wait semantics.
+- **Exit codes and output matter.** A failing test must fail the Dagger function and therefore the check. Export useful artifacts (JUnit XML, coverage, build outputs, screenshots) via `Directory`/`File` return values or `export`, to a path CI can collect.
+- **Layer A overlap rule:** do not duplicate in Dagger what RWX already prepared if that forces a double install. Follow the layering in 2.3: RWX tasks prepare toolchains and caches; the Dagger program consumes only what it cannot get from RWX.
+- **Parity with local:** the same function with the same arguments must work in both places. Differences (e.g. extra secrets, remote cache endpoints) come only from arguments/env, not from separate code paths.
+
+### 2.3 Caching: RWX is the only cache (decided; do not add Dagger Cloud)
+
+Use **RWX's content-based cache and `tool-cache` for everything**, including Dagger's state. No Dagger Cloud or external cache service. The mechanism below is proven in production in a sibling repo (see Appendix A); reuse it, and verify each piece against `rwx docs` before relying on it.
+
+1. **Layer A in RWX tasks** (uv, Python, Dagger CLI, SDK venv, language/build toolchain, codegen): tight `filter`s, and **no `use: code`** unless the task reads repo files. A task that `use`s the checkout gets a new cache key every commit; keep install/warm tasks off it so they stay content-cache hits across commits.
+2. **Dagger CLI**: install the checksum-pinned release tarball (verify sha256 against the release `checksums.txt`) in its own task with no `use:`. **Dagger SDK**: `uv venv` + `uv pip install "dagger-io==X.Y.Z"` in its own task, no repo reads.
+3. **Engine image warm task**: `docker: preserve-data`, `use: [dagger-cli-install]` only; it `docker pull`s `registry.dagger.io/engine:<version>` (with retries) so test tasks don't pay the cold pull. Without `docker:` RWX starts no Docker daemon.
+4. **Final Dagger task(s)**: `docker: true`, `use:` the checkout + toolchain + SDK + engine-warm tasks, and `timeout:` raised (RWX defaults to 10m; cold runs get killed otherwise).
+5. **Build-tool cache across runs**: have the Dagger program **export its cache** (e.g. the Bazel disk/repo cache, package-manager stores) to a host directory (tar or directory export, path passed via an env var like `CI_CACHE_DIR`, exported by an earlier task through `$RWX_ENV`) and persist it with RWX **`tool-cache: <name>`** on the final task(s). Import it back into the Dagger container at the start of the run. Gate with an env flag (`CI_CACHE_WRITE`) so only the intended runs export (exporting multi-GB caches on every run wastes minutes).
+6. **Write-access policy**: scope tool-cache writes with an RWX **vault** (`tool-cache: { vault: <repo>-main }` at the top level) so only main writes; PR runs restore main's cache but never write it. Note the tool-cache TTL (observed 48h, not extended by incremental writes) and add a scheduled **cache-rebuild** trigger (cron/dispatch targeting just the final task with an empty diff base so it runs the full suite) to refresh it before it lapses.
+7. **Export real paths** from setup tasks with `echo "$X" >> $RWX_ENV/NAME` (e.g. `CI_CACHE_DIR`, venv `bin` on `PATH`) rather than hardcoding `/root` or `$HOME` in downstream tasks.
+
+Report: size of the persisted cache, restore time vs. cold-build time saved, and that a lockfile/toolchain bump invalidates the right layer. If a piece isn't feasible on the runner, fall back to Layer A caching only and say why, with measurements. Never fall back to a non-RWX cache.
+
+The **local command must remain the same** and must work with no CI-specific services; locally Dagger just uses its normal engine cache and the cache-export env vars are unset.
+
+Confirm early that the runner can run the Dagger engine (`docker: true`). Per this org's conventions Dagger cannot run in Conductor cloud sandboxes: validate it in an RWX task (and locally on a machine with Docker).
+
+### 2.4 Cache-key discipline in RWX
+
+For each RWX task, set inputs so the content-based cache keys are as tight as possible: use `filter` to restrict to the files the task truly reads (lockfiles, manifests, config, specific source dirs), put slow-but-stable tasks early with narrow filters, and push the high-churn source into the **last** task only. The rule: **a change to application source should invalidate only the final Dagger task, nothing before it.** If a doc-only change invalidates the install task, fix the filters.
+
+Gate 2: write a design note to `ci/README.md` (draft) covering the A/B/C classification, the subcommand list with arguments, secrets, pinned versions, and the expected cache-hit behavior for three scenarios: (a) docs-only change, (b) source-only change, (c) lockfile change.
+
+## Phase 3: Implement
+
+1. Scaffold `ci/` as an ordinary program with the SDK as a dependency (pin the SDK version in its own dep file/lockfile). No module scaffolding.
+2. Implement functions one at a time, starting with the cheapest check. After each, run it locally if Docker is available (`ci/run.sh <subcommand>`); if not, run it in RWX (Phase 4). Do not claim a function works until it has actually executed somewhere.
+3. Add `.dockerignore`-style/ignore filters so Dagger uploads minimal context.
+4. Edit `.rwx/*.yml`:
+   - Keep Layer A/B tasks, tighten `filter`s, and keep the DAG parallel.
+   - Replace Layer C task bodies with a call into `ci/` (e.g. `ci/run.sh all` or `ci/run.sh <subcommand>`), passing secrets via env as RWX secrets, never inline.
+   - Keep task names that branch protection or other automation depends on, or list every rename in the PR description.
+   - Preserve outputs/artifacts downstream tasks consume.
+5. Run `rwx lint .rwx/<file>.yml` after **every** edit.
+6. Write `ci/README.md` for humans: prerequisites (`dagger` version, Docker), the one-line commands (`ci/run.sh all`, `ci/run.sh test`, etc.), how to pass secrets locally, how CI invokes the same thing, what is cached where, and how to debug (`--interactive`, `dagger` TUI/logs, `rwx logs`).
+7. Update `AGENTS.md`/`CLAUDE.md`/`README.md` so future agents know: CI logic lives in `ci/`, how to run it, and that Dagger must run in RWX (not in Conductor sandboxes) when working from a cloud workspace.
+
+## Phase 4: Validate
+
+- `rwx lint` passes.
+- `rwx run .rwx/<file>.yml --wait --fail-fast` on the working tree (no push needed). Iterate with `rwx results`, `rwx logs`, until green.
+- **Cache behavior test (required, with evidence):** run twice unchanged; then make (a) a docs-only edit, (b) a one-line source edit, (c) a lockfile edit, re-running each time. Report per-task cache hit/miss and wall time against the expectations from Gate 2. Fix filters/layers until they match.
+- **Negative test:** introduce a deliberate failing test and confirm the pipeline fails with a useful message and exit code, then revert.
+- **Equivalence check:** the set of checks executed is the same as before the migration (compare against the Phase 1 table). Nothing silently dropped.
+- **Local parity:** on a machine with Docker, `ci/run.sh all` passes from a clean clone with no RWX involvement. If you cannot run this in your environment, say so explicitly and document the exact command for the human to verify. Do not claim it was verified.
+- Secrets audit: grep logs/config for token values; confirm none printed or committed.
+
+## Phase 5: Deliver
+
+Open a PR following the repo's PR conventions (run any required review tooling and fix all findings first). The description must include:
+
+- The A/B/C classification table and the caching mechanism from 2.3 as applied (tool-cache/vault setup, cache-rebuild trigger), with measurements.
+- Before/after pipeline wall time and the cache-hit matrix from Phase 4.
+- Local usage (`ci/README.md` link) and the exact commands to reproduce CI locally.
+- Renamed/removed tasks, secret/env changes, version pins, and known limitations (e.g. cold Dagger cache on first run, Docker requirement).
+- What you could not verify and why.
+
+## Guardrails
+
+- Never print, log, or commit tokens. Use the RWX token for the repo's owning org; switch tokens on not-found/unauthorized.
+- Do not delete the old pipeline logic until the new one is green in RWX; remove dead code in the same PR once it is.
+- Don't over-migrate: if a task is pure orchestration, a deploy, or has no value locally, leave it in RWX.
+- Don't invent flags or YAML keys. If docs don't confirm it, test it or ask.
+- If the repo has no tests/build worth containerizing, or Dagger can't be supported by the runner, stop and report with evidence instead of forcing it.
+- Prefer small, reviewable commits: scaffold → one function → RWX wiring → docs.
+
+## Final report format
+
+1. What changed (files, one line each).
+2. Pipeline shape (DAG sketch) and where Dagger is invoked.
+3. Cache results table (scenario × task: hit/miss, time).
+4. How to run locally.
+5. Unverified items and risks.
+6. PR link.
+
+---
+
+## Appendix A: Reference implementation (same architecture, already working)
+
+A sibling repo (a Bazel + pytest monorepo) already does this; mirror its shape, not its repo-specific details. Its `.rwx/tests-bazel.yml` and Python Dagger program (`scripts/ci/bazel_dagger.py`) work like this (the new repo should put its program in `ci/` instead):
+
+**DAG**
+```
+captain ─────────────────────────────┐ (test-result reporting CLI; optional)
+github-cli ─► changes (github/compare w/ globs) ─► [skip-gate]
+github-cli ─► head-moved (cron only)             ─► [skip-gate]
+git-credentials ─► code (git/clone, full depth) ─► git-history (detached clone, remote rewritten)
+uv-install [if skip-gate] ─► dagger-sdk-install (uv venv + dagger-io==X.Y.Z)
+uv-install + code(filter: toolchain script only) ─► toolchain (pinned tools, cache hit until pins change)
+dagger-cli-install (no use:, checksum-pinned tarball)
+  ─► dagger-engine-warm [if skip-gate, docker: preserve-data]
+final: use [code, git-history, toolchain, dagger-sdk-install, dagger-engine-warm, captain]
+       docker: true, tool-cache: <name>, timeout: 30m+  ─► runs `dagger run python <program>` (via `captain run` for reporting)
+```
+
+**Patterns worth copying**
+- **One Python program, many steps.** The same program is selected by an env var (e.g. `BAZEL_DAGGER_STEP=plan-full | build-full | test-shard`) or subcommand, and by mode env flags (`RUN_IMPACTED`, `RUN_FULL`, `DIFF_BASE_SHA`). RWX tasks are thin: set env, call `dagger run python …`. Full-suite work is split into parallel RWX tasks (`plan`, `build-full`, `bazel-full`) so the fast gate and build-everything don't sit on the test path.
+- **Skip gate.** A shared YAML alias (`&skip-gate`) on the root heavy task(s); RWX skips all dependents. The `changes` task (github/compare + broad `patterns:` globs: sources, build files, lockfiles, CI scripts, the RWX yml itself; err wide, a false positive costs one run) runs on every trigger on purpose, because a gate that reads a *skipped* task's value is itself skipped. Non-PR triggers pass `base-sha == commit-sha` so the diff is empty and other clauses decide.
+- **Impacted vs. full mode** via `init.mode` (push/PR → impacted; cron/dispatch/cli → full). On a new branch `before-sha` is all-zero: fall back to full when `git cat-file -e` fails on the base.
+- **Triggers** (`on.github.push/pull_request`, `cron`, `dispatch`, `cli`, and a `cache-rebuild` target) all feed the same `init:` params. Cron triggers expose `event.git.*` and `event.cron.*` (see rwx.com/docs/cron-schedules); the sibling repo uses only `event.git.*` and literals, and a test enforces it. Use string `"true"/"false"` for init flags that flow into env.
+- **Security.** Fork PRs never get secrets: gate secret-carrying tasks/triggers on same-repo + trusted author; skip trunk-merge queue branches if not a required status. Pin installer scripts and binaries by sha256.
+- **Self-contained git history** for diff-based logic: full-depth clone, then `git clone --no-local` into a second detached copy with `origin` rewritten to the real URL; export its path via `$RWX_ENV`. For PRs, fetch the base branch into that copy with a `GIT_ASKPASS` helper so the token stays out of argv/URLs.
+- **Reporting.** `captain run <suite>` wraps the Dagger call to upload test results (e.g. to Trunk) with results in a `CAPTAIN_RESULTS_DIR`; make upload failures non-fatal off-PR so a failed upload can't discard the tool-cache layer.
+- **Root-owned cache dirs.** Containers may leave root-owned files in the exported cache; `chown -R "$(id -u):$(id -g)"` the cache dir before reuse.
+
+**Pitfalls it hit (put these in your checklist)**
+- Warm/install tasks that `use: code` never cache-hit; they re-ran every commit.
+- No `docker:` key → "Cannot connect to the Docker daemon".
+- Default 10m timeout killed an otherwise-passing cold run.
+- Writing the multi-GB cache on every main push uploaded a huge layer for nothing; restrict writes (flag + vault) to cache-rebuild/nightly runs.
+- A gate that reads a skipped task's value is itself skipped and silently skips the chain.
+- Sharing the repo's root `pyproject.toml`/`uv.lock` with the CI code is fine (add `dagger-io` pinned as a dependency, e.g. a `ci` dependency group). Scripts that need no project deps can use `uv run --no-project`.
+
+
+<conductor_message_sender>
+This message was sent with the API key "local" on behalf of "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>

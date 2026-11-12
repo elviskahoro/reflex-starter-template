@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M78QNTJWV19S6Y3F2BSBHGTA",
+  "session_id": "7767cdba-c529-431f-825c-e77d140c0d96",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-12T20:37:38.951071633Z",
+  "branch": "conductor/rwx-dagger-reflex-starter-template",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".gitignore",
+    ".rwx/tests.yml",
+    ".rwx/trunk-check.yml",
+    "AGENTS.md",
+    "ci/README.md",
+    "ci/main.py",
+    "ci/pyproject.toml",
+    "ci/run.sh",
+    "ci/uv.lock"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "162dd789b663",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 52,
+    "cache_creation_tokens": 48896,
+    "cache_read_tokens": 1299590,
+    "output_tokens": 13478,
+    "api_call_count": 26
+  },
+  "redaction": {
+    "replacements": 4,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 3,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

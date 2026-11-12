@@ -55,25 +55,52 @@ tasks:
       sh "${script}"
       echo "$HOME/.local/bin" >> $RWX_ENV/PATH
 
-  - key: deps
-    use: [code, uv-install]
-    filter:
-      - pyproject.toml
-      - uv.lock
+  - key: dagger-cli-install
     run: |
-      uv sync --frozen --group dev
-      echo "$PWD/.venv/bin" >> $RWX_ENV/PATH
-      echo "VIRTUAL_ENV=$PWD/.venv" >> $RWX_ENV/VIRTUAL_ENV
+      set -euo pipefail
+      version="0.21.8"
+      archive="$(mktemp)"
+      trap 'rm -f "${archive}"' EXIT
+      curl -fsSL "https://dl.dagger.io/dagger/releases/${version}/dagger_v${version}_linux_amd64.tar.gz" -o "${archive}"
+      echo "53e226c7da8fb75171e58c35759d736d961ce8b3a12db0baa7b7107954fccc5a  ${archive}" | sha256sum -c -
+      mkdir -p "$HOME/.local/bin"
+      tar -C "$HOME/.local/bin" -xzf "${archive}" dagger
+      echo "$HOME/.local/bin" >> "$RWX_ENV/PATH"
+
+  # Filtered to ci/'s lockfile inputs: stays a cache hit across source commits.
+  - key: dagger-sdk-install
+    use: [uv-install, code]
+    filter:
+      - ci/pyproject.toml
+      - ci/uv.lock
+    run: |
+      set -euo pipefail
+      (cd ci && uv sync --frozen)
+      echo "$PWD/ci/.venv/bin/python" >> "$RWX_ENV/CI_PYTHON"
+
+  # Pre-pull the engine image so the Dagger task does not pay the cold pull.
+  - key: dagger-engine-warm
+    use: [dagger-cli-install]
+    docker: preserve-data
+    run: |
+      set -euo pipefail
+      for i in 1 2 3; do
+        docker pull registry.dagger.io/engine:v0.21.8 && exit 0
+        sleep 5
+      done
+      exit 1
 
   - key: captain
     call: rwx/install-captain 1.2.0
 
   - key: pytest
-    use: [code, deps, captain]
+    use: [code, dagger-cli-install, dagger-sdk-install, dagger-engine-warm, captain]
+    docker: true
+    timeout: 30m
     run: |
       captain run reflex-starter-template-pytest \
-        --command "uv run pytest -q --report-log=pytest-results.json" \
-        --retry-command "uv run pytest -q --report-log=pytest-results.json {{ tests }}" \
+        --command "ci/run.sh test" \
+        --retry-command "ci/run.sh test -- {{ tests }}" \
         --retries 2 \
         --test-results pytest-results.json \
         --print-summary

@@ -63,3 +63,10 @@ trunk check --all            # lint (run uv sync first: pyright/pyrefly use .ven
 - Do not push to the remote unless explicitly asked.
 - Ask before using any escape hatch that bypasses a check (skip flags,
   `--no-verify`, lint/type ignores).
+
+## CI logic (Dagger)
+
+pytest and `tach` run through `ci/` (plain Dagger SDK program, see `ci/README.md`):
+`ci/run.sh test|tach|all`. Dagger needs Docker, so it cannot run in Conductor
+cloud sandboxes; validate with `rwx run .rwx/tests.yml --wait` (stage new files
+with `git add` first).

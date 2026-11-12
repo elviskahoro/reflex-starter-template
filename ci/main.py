@@ -3,7 +3,7 @@
 Subcommands: test [pytest args...], tach, all.
 Plain SDK program (no Dagger module). Same code path locally and in RWX; CI
 differences come only from env vars (CI_CACHE_DIR, CI_CACHE_WRITE).
-"""
+"""  # noqa: INP001  # standalone script, not a package
 
 from __future__ import annotations
 
@@ -64,34 +64,37 @@ async def _export_cache(ctr: dagger.Container) -> None:
 
 
 async def test(pytest_args: list[str]) -> None:
+    """Run pytest in the container and propagate its exit code."""
     ctr = _base().with_exec(
         [
             "/opt/venv/bin/pytest", "-q",
             "--report-log=/tmp/pytest-results.json", *pytest_args,
-        ],  # fmt: skip
+        ],
         expect=dagger.ReturnType.ANY,
-    )
+    )  # fmt: skip
     results_dir = Path(os.environ.get("CI_RESULTS_DIR", str(ROOT)))
-    await ctr.file("/tmp/pytest-results.json").export(
-        str(results_dir / "pytest-results.json")
+    await ctr.file("/tmp/pytest-results.json").export(  # noqa: S108  # container-internal path
+        str(results_dir / "pytest-results.json"),
     )
     await _export_cache(ctr)
     code = await ctr.exit_code()
     if code:
-        print(await ctr.stdout(), file=sys.stdout)
-        print(await ctr.stderr(), file=sys.stderr)
+        print(await ctr.stdout(), file=sys.stdout)  # noqa: T201
+        print(await ctr.stderr(), file=sys.stderr)  # noqa: T201
         raise SystemExit(code)
-    print(await ctr.stdout())
+    print(await ctr.stdout())  # noqa: T201
 
 
 async def tach() -> None:
+    """Run tach check and check-external in the container."""
     ctr = _base()
     for cmd in (["check"], ["check-external"]):
         out = await ctr.with_exec(["/opt/venv/bin/tach", *cmd]).stdout()
-        print(out)
+        print(out)  # noqa: T201
 
 
 async def main() -> None:
+    """Parse arguments and dispatch to the selected checks."""
     parser = argparse.ArgumentParser(prog="ci/run.sh")
     parser.add_argument("command", choices=["test", "tach", "all"])
     parser.add_argument("pytest_args", nargs=argparse.REMAINDER)

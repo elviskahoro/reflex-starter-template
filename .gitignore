@@ -90,4 +90,5 @@ wheels/
 *.py[cod]
 *.zip
 uv.lock
+!ci/uv.lock
 .claude/settings.local.json

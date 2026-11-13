@@ -1,0 +1,10 @@
+[project]
+name = "reflex-starter-template-ci"
+version = "0.0.0"
+description = "Dagger SDK program for local/CI checks (no Dagger module)"
+requires-python = ">=3.11"
+dependencies = ["dagger-io==0.21.8"]
+
+[tool.uv]
+package = false
+exclude-newer = "7 days"

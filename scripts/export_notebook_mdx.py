@@ -6,7 +6,7 @@ break (or inject code into) the MDX build. This script runs the export and
 post-processes only the text outside code fences.
 
 Usage: ``uv run python scripts/export_notebook_mdx.py notebook.py -o out.mdx``
-"""
+"""  # noqa: INP001  # standalone script, not a package
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from pathlib import Path
 # Separator marimo emits between consecutive markdown cells; must survive.
 CELL_SEPARATOR = "{/* */}"
 _FENCE_OPEN = re.compile(r"^(?P<indent> {0,3})(?P<fence>`{3,})(?P<info>.*)$")
-_HTML_COMMENT = re.compile(r"<!--(.*?)-->")
+_HTML_COMMENT = re.compile(r"<!--([\s\S]*?)-->")
 _ESM_LINE = re.compile(r"^(\s*)(import|export)\b")
 _HIDDEN_META = re.compile(r"(?:^|\s)(?:hide-code|disabled)=true(?:\s|$)")
 _DROPPED_FRONTMATTER_KEYS = ("marimo-version",)
@@ -137,6 +137,7 @@ def export(notebook: Path) -> str:
 
 
 def main() -> int:
+    """Export the notebook named on the command line to an MDX file."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("notebook", type=Path)
     parser.add_argument("-o", "--output", type=Path, required=True)

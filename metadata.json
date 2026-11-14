@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M7DRCYXGY0GS8VE82G4TAF96",
+  "strategy": "manual-commit",
+  "branch": "conductor/gh0010-reflex-starter-template",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "scripts/export_notebook_mdx.py",
+    "tests/test_export_notebook_mdx.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 2665,
+    "cache_read_tokens": 136884,
+    "output_tokens": 908,
+    "api_call_count": 3
+  },
+  "redaction": {
+    "replacements": 4,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 3,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 1,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

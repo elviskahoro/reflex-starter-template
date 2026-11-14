@@ -113,7 +113,7 @@ def sanitize_mdx(text: str) -> str:
                 out.append(line)
             continue
         out.append(_escape_prose_line(line))
-    return re.sub(r"\n{3,}", "\n\n", "\n".join(out))
+    return "\n".join(out)
 
 
 def export(notebook: Path) -> str:
@@ -128,8 +128,6 @@ def export(notebook: Path) -> str:
             str(notebook),
             "--flavor",
             "mdx",
-            "-o",
-            "/dev/stdout",
         ],
         check=True,
         capture_output=True,

@@ -55,3 +55,18 @@ def test_hidden_and_config_fences_dropped() -> None:
 def test_frontmatter_version_dropped_and_not_escaped() -> None:
     src = "---\ntitle: 'A {v1}'\nmarimo-version: 0.25.1\n---\n\nText"
     assert sanitize(src) == "---\ntitle: 'A {v1}'\n---\n\nText"
+
+
+def test_blank_lines_in_code_preserved() -> None:
+    src = "```python marimo\na = 1\n\n\nb = 2\n```"
+    assert sanitize(src) == src
+
+
+def test_export_end_to_end(tmp_path: Path) -> None:
+    nb = tmp_path / "nb.py"
+    nb.write_text(
+        "import marimo\napp = marimo.App()\n\n@app.cell\ndef _(mo):\n"
+        '    mo.md("List<int> {a}")\n    return\n',
+    )
+    out = _MOD.export(nb)
+    assert r"List\<int> \{a\}" in out

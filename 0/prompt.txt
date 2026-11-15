@@ -1,0 +1,28 @@
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/assets/bcaa90a0-0e3e-4764-aa8a-e6e41a204b26/@railway-app (1.2 KB)
+- .context/attachments/assets/26e52740-7f54-4a8b-9a59-5d2a72512380/@pullfrog (3.0 KB)
+- .context/attachments/assets/8e7646a4-6647-4834-abda-a8eae8494bef/export_notebook_mdx.py +69 (1.8 KB)
+- .context/attachments/assets/89a76f3b-4ffe-41c4-8847-08b60115997c/pyproject.toml +22 (731 B)
+- .context/attachments/assets/2e184599-febf-4e40-b2c8-56549c3895b2/export_notebook_mdx.py +121 (710 B)
+</system_instruction>
+
+
+
+
+<system_instruction>
+The user has attached these files. Read them before proceeding.
+- .context/attachments/assets/bcaa90a0-0e3e-4764-aa8a-e6e41a204b26/@railway-app (1.2 KB)
+- .context/attachments/assets/26e52740-7f54-4a8b-9a59-5d2a72512380/@pullfrog (3.0 KB)
+- .context/attachments/assets/8e7646a4-6647-4834-abda-a8eae8494bef/export_notebook_mdx.py +69 (1.8 KB)
+- .context/attachments/assets/89a76f3b-4ffe-41c4-8847-08b60115997c/pyproject.toml +22 (731 B)
+- .context/attachments/assets/2e184599-febf-4e40-b2c8-56549c3895b2/export_notebook_mdx.py +121 (710 B)
+</system_instruction>
+
+
+
+.context/attachments/assets/bcaa90a0-0e3e-4764-aa8a-e6e41a204b26/@railway-app .context/attachments/assets/26e52740-7f54-4a8b-9a59-5d2a72512380/@pullfrog .context/attachments/assets/8e7646a4-6647-4834-abda-a8eae8494bef/export_notebook_mdx.py +69 .context/attachments/assets/89a76f3b-4ffe-41c4-8847-08b60115997c/pyproject.toml +22 .context/attachments/assets/2e184599-febf-4e40-b2c8-56549c3895b2/export_notebook_mdx.py +121
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>

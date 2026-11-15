@@ -66,7 +66,13 @@ def _escape_prose_line(line: str) -> str:
         for p in parts
     ]
     result = "".join(rendered)
-    return _ESM_LINE.sub(r"\1\\\2", result, count=1)
+    # Entity-encode the first letter: a backslash would stay visible in MDX
+    # (escapes only apply before punctuation), an entity renders as the letter.
+    return _ESM_LINE.sub(
+        lambda m: f"{m.group(1)}&#{ord(m.group(2)[0])};{m.group(2)[1:]}",
+        result,
+        count=1,
+    )
 
 
 def _split_frontmatter(text: str) -> tuple[list[str], list[str]]:
@@ -129,10 +135,13 @@ def export(notebook: Path) -> str:
             "--flavor",
             "mdx",
         ],
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
     )
+    if proc.returncode:
+        msg = f"marimo export failed ({proc.returncode}):\n{proc.stderr}"
+        raise RuntimeError(msg)
     return sanitize_mdx(proc.stdout)
 
 

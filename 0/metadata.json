@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M7PSN3PE3M81A1H0MQEWZB18",
+  "session_id": "1c584c82-2cf7-4e69-9bcc-40d725f9f195",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-18T07:41:34.420597996Z",
+  "branch": "conductor/reflex-starter-template-railway-iac",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".railway/railway.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "1a36921b54f4",
+  "checkpoint_transcript_start": 166,
+  "transcript_lines_at_start": 166,
+  "compact_transcript_start": 31,
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 3490,
+    "cache_read_tokens": 398343,
+    "output_tokens": 1744,
+    "api_call_count": 8
+  },
+  "redaction": {
+    "replacements": 8,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 3,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 5,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 4
+  }
+}

@@ -202,7 +202,7 @@ curl -f https://<your-domain>.up.railway.app/ping     # expect: pong
 3. Railway auto-detects the `Dockerfile` and builds.
 4. In the service: **Settings → Networking → Generate Domain**.
 
-`.railway/railway.ts` (Railway IaC) configures: Dockerfile builder, `/ping` healthcheck, 30s draining, and restart-on-failure (max 5). Run `npm ci` then `railway config plan` / `railway config apply`.
+`.railway/railway.ts` (Railway IaC) configures: Dockerfile builder, `/ping` healthcheck, 30s draining, and restart-on-failure (max 5). Run `npm ci` then `railway config plan` / `railway config apply`. If you copied this template, first point `github()` in that file at your own repo and rename the service to match yours.
 
 ### Environment variables
 

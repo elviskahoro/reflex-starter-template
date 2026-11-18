@@ -35,7 +35,6 @@ In Railway's dashboard under your project:
   - Runs Reflex in production mode on port 3000
 
 - **.railway/railway.ts**: Railway infrastructure-as-code (replaces deprecated railway.toml)
-  - Specifies Docker as the build method
   - Sets the start command
   - Configures restart policy
 

@@ -92,3 +92,6 @@ wheels/
 uv.lock
 !ci/uv.lock
 .claude/settings.local.json
+
+node_modules/
+.railway/.cac-migration.json

@@ -1,0 +1,9 @@
+{
+  "name": "reflex-starter-template-railway-iac",
+  "private": true,
+  "type": "module",
+  "description": "Only exists so `railway config plan/apply` can resolve the railway/iac SDK for .railway/railway.ts. Not part of the Python app.",
+  "devDependencies": {
+    "railway": "^3.17.0"
+  }
+}

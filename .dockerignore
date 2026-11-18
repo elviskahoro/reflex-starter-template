@@ -16,3 +16,7 @@ node_modules
 web/.web
 web/.reflex
 .DS_Store
+
+.railway/
+package.json
+package-lock.json

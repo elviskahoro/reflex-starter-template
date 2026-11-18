@@ -10,7 +10,7 @@ This document is written for an autonomous agent. Follow the sections in order. 
 
 ## 1. What gets deployed
 
-- **Frontend**: Next.js static export, built at Docker image build time, served by Caddy on `$PORT` (Railway sets this; defaults to `8080` per `railway.toml`).
+- **Frontend**: Next.js static export, built at Docker image build time, served by Caddy on `$PORT` (Railway sets this).
 - **Backend**: Reflex Python backend on `localhost:8000`, started by `entrypoint.sh`.
 - **Reverse proxy**: Caddy proxies `/_event/*`, `/_upload`, and `/_upload/*` to the backend; everything else is served as a static file with SPA fallback to `/404.html`.
 - **Health check**: `GET /ping` returns `pong` (used by Railway and the Docker `HEALTHCHECK`).
@@ -30,7 +30,7 @@ The split-process model (Caddy + backend, supervised by `entrypoint.sh`) is what
 ├── assets/                # favicon, globals.css (native theme tokens), llms.txt
 ├── entrypoint.sh          # Starts backend + Caddy, supervises both
 ├── pyproject.toml         # Python project; pinned reflex version
-├── railway.toml           # Railway build/deploy config
+├── .railway/railway.ts    # Railway IaC (build/deploy config)
 ├── rxconfig.py            # Reflex config: app_name="web", sitemap + Tailwind v4 plugins, no watermark
 ├── symlink/               # Git submodule (https://github.com/elviskahoro/skills-reflex)
 ├── uv.lock                # uv lockfile (frozen install)
@@ -202,15 +202,14 @@ curl -f https://<your-domain>.up.railway.app/ping     # expect: pong
 3. Railway auto-detects the `Dockerfile` and builds.
 4. In the service: **Settings → Networking → Generate Domain**.
 
-`railway.toml` already configures: Dockerfile builder, `/ping` healthcheck, 30s draining, restart-on-failure (max 5), and `PORT=8080`.
+`.railway/railway.ts` (Railway IaC) configures: Dockerfile builder, `/ping` healthcheck, 30s draining, and restart-on-failure (max 5). Run `npm ci` then `railway config plan` / `railway config apply`. If you copied this template, first point `github()` in that file at your own repo and rename the service to match yours.
 
 ### Environment variables
 
-Already set in `railway.toml` (`[env]` block):
+`REFLEX_ENV` and `PYTHONUNBUFFERED` are set in the `Dockerfile`; Railway injects `PORT` itself:
 
 - `REFLEX_ENV=prod`
 - `PYTHONUNBUFFERED=1`
-- `PORT=8080`
 
 Add any app secrets via the Railway dashboard (**Variables** tab) or:
 
@@ -218,7 +217,7 @@ Add any app secrets via the Railway dashboard (**Variables** tab) or:
 railway variables --set KEY=VALUE
 ```
 
-Do **not** put secrets in `railway.toml` — it is committed to git.
+Do **not** put secrets in `.railway/railway.ts` — it is committed to git.
 
 ---
 

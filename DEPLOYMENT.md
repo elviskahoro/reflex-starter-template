@@ -34,7 +34,7 @@ In Railway's dashboard under your project:
   - Pre-builds the Reflex frontend during image build
   - Runs Reflex in production mode on port 3000
 
-- **railway.toml**: Configures Railway-specific settings
+- **.railway/railway.ts**: Railway infrastructure-as-code (replaces deprecated railway.toml)
   - Specifies Docker as the build method
   - Sets the start command
   - Configures restart policy

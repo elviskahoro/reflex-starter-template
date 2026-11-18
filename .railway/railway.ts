@@ -3,7 +3,7 @@ import { defineRailway, github, project, service } from "railway/iac";
 // See https://docs.railway.com/infrastructure-as-code#multi-repo-projects
 export const partial = "web";
 export default defineRailway(() => {
-  const web = service("web", {
+  const app = service("reflex-starter-template", {
     source: github("elviskahoro/reflex-starter-template", { branch: "main", checkSuites: false }),
     // Uppercase DOCKERFILE is required; lowercase is not persisted.
     build: { builder: "DOCKERFILE", dockerfilePath: "Dockerfile", watchPatterns: ["Dockerfile", "pyproject.toml", "uv.lock", "web/**", "Caddyfile", "entrypoint.sh"] },
@@ -14,6 +14,6 @@ export default defineRailway(() => {
 
   return project("reflex-starter-template", {
     variables: { managed: false },
-    resources: [web],
+    resources: [app],
   });
 });

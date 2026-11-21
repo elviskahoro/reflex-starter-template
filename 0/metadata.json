@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M7YGJ5740M5TXG7AF5P71RGK",
+  "session_id": "2bc9d30e-67bc-46eb-811e-05e7c5b93d12",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-21T07:36:35.772976234Z",
+  "branch": "conductor/reflex-starter-template-issue-80",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/settings.json"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "01a662bbb7b8",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 27742,
+    "cache_read_tokens": 290888,
+    "output_tokens": 2419,
+    "api_call_count": 10
+  },
+  "redaction": {
+    "replacements": 5,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 3,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 2,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 1
+  }
+}

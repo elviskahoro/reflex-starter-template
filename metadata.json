@@ -1,0 +1,60 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M8AF6FGKK7FFVV02QENMY1JT",
+  "strategy": "manual-commit",
+  "branch": "Marchili/linear-issue-msg-616",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "AGENTS.md",
+    "deploy/modal/README.md",
+    "deploy/modal/frontend_files.py",
+    "deploy/modal/modal_app_proxy.py",
+    "deploy/modal/modal_app_server.py",
+    "deploy/modal/modal_state.py",
+    "deploy/modal/proxy_core.py",
+    "deploy/modal/server_entry.py",
+    "pyproject.toml",
+    "ruff.toml",
+    "tach.toml",
+    "tests/test_frontend_files.py",
+    "tests/test_modal_state.py",
+    "tests/test_proxy_core.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 50,
+    "cache_creation_tokens": 63202,
+    "cache_read_tokens": 1212968,
+    "output_tokens": 10894,
+    "api_call_count": 23,
+    "subagent_tokens": {
+      "input_tokens": 30,
+      "cache_creation_tokens": 69718,
+      "cache_read_tokens": 670647,
+      "output_tokens": 19858,
+      "api_call_count": 15
+    }
+  },
+  "redaction": {
+    "replacements": 31,
+    "layers": {
+      "betterleaks": 22,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 6,
+      "credentialed_uri": 0,
+      "entropy": 10,
+      "key_context": 3,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

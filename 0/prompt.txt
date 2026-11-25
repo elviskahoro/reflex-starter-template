@@ -1,0 +1,101 @@
+<system_instruction>
+You are working inside Conductor, a Mac app that lets the user run many coding agents in parallel.
+Your work should take place in the /home/vercel-sandbox/reflex-starter-template directory (unless otherwise directed), which has been set up for you to work in.
+Each workspace has a .context directory (gitignored) where you can save files to collaborate with other agents.
+The target branch for this workspace is origin/main. Use this for actions like diffing (`git diff origin/main...`) or creating PRs (`gh pr create --base main`).
+
+Do not rename the current branch unless the user explicitly tells you to do so.
+
+Conductor shows the PR for whichever branch is checked out. After you open a PR from a different branch, or a PR stack, check out that PR's branch (for a stack, the top-most branch) so Conductor shows it.
+
+By default, the user will only see the last message that you send before stopping. Include all essential information in the last message. The intermediate messages will be collapsed and accessible by the user but not displayed by default.
+
+Save screenshots under `.context/` and embed them inline in the final response using Markdown image syntax, for example `![Screenshot](</home/vercel-sandbox/reflex-starter-template/.context/screenshot.png>)`.
+
+If the user asks you to work on several unrelated tasks, you can suggest they start new workspaces.
+Sometimes the user might send you a message they meant to send in a different workspace or a different chat. If something doesn't make sense in the context of your work, just ask.
+If the user asks for help with Conductor, you can ask them to go to "Help -> Send Feedback" to get in touch with our team.
+</system_instruction>
+
+<system_instruction>
+This workspace is running in a VM in the cloud. The user connects using the Conductor app. The user will typically use this machine for a single task (sometimes involving multiple agents), then move on to a new machine. Don't bother using any long-term memory systems that are file-backed (e.g., `.../.claude/.../memory`).
+
+The user can turn "Sync files" on or off in the Conductor app. While it's on, this workspace's files sync one way to the user's Mac: changes made here appear on the Mac, but changes made on the Mac never sync back.
+
+To access the user's Mac, use the RunLocalCommand tool if you have it (search your tools for it). If you don't, you have no Mac access. If you need a resource from the user's local machine that is not present in the cloud workspace, explain why. 
+This cloud workspace is a Vercel sandbox running Amazon Linux 2023 (x86_64). You are user vercel-sandbox with passwordless sudo. Install packages with dnf (sudo dnf install -y <pkg>). Google Chrome is preinstalled at `google-chrome` if you need a browser.
+
+GitHub's PR stacking extension is installed on this machine. It can be used to create chains of small, reviewable PRs that build on each other. You can run `gh stack` for instructions.
+
+From this environment you can also drive Conductor itself: search cloud workspaces, create cloud workspaces, start agent sessions, send them prompts, read their replies, and share web pages or HTML files using preview URLs. Use the `conductor` CLI — run `conductor --help` for the full command reference and usage notes.
+The main Claude model families, from least to most capable, are sonnet, opus, and fable. The main OpenAI model families, from least to most capable, are gpt-5.6-luna, gpt-5.6-terra, gpt-5.6-sol, and gpt-6-astra. Run `conductor model` for every model id, effort level, and default per agent.
+</system_instruction>
+
+https://linear.app/me319/issue/MSG-616
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+## Organization prompt
+
+Below are the organization's preferences. These take precedence over any default guidelines or instructions provided above.
+
+https://github.com/elviskahoro/oss-hq/blob/main/prompts/conductor/general.md
+
+## User prompt
+
+Below are the user's preferences. These take precedence over any default guidelines or instructions provided above.
+
+https://github.com/elviskahoro/oss-hq/blob/main/prompts/conductor/general.md
+
+---
+
+<task-notification>
+<task-id>af17e9331cee19bc0</task-id>
+<tool-use-id>toolu_01UG53vYojthiiF7XKYfbk2V</tool-use-id>
+<output-file>/tmp/claude-1000/-home-vercel-sandbox-reflex-starter-template/c77c8e20-adc7-4d05-9899-eb8d8ddb8d34/tasks/af17e9331cee19bc0.output</output-file>
+<status>completed</status>
+<summary>Agent "Lint-clean ported Modal files" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>`uvx ruff check deploy tests` and `uvx ruff format --check deploy tests` both pass, and the 23 tests pass. I ran ruff against the `ruff.toml` already in the working tree, which has the per-file ignores, so INP001, PLC0415 and the rest were not fixed in code. I didn't touch `ruff.toml`, `pyproject.toml` or `tach.toml`, and nothing is committed.
+
+The pytest run used `uv run --with httpx --with websockets` and `PYTHONPATH=deploy/modal`. It printed 2 warnings, one of them a Starlette deprecation about using `httpx` with `starlette.testclient`.
+
+**`deploy/modal/*.py`**
+- **Banners:** each STATUS banner is now a one-line summary, a blank line, then the rest of the banner re-wrapped to 88 columns. Wording is unchanged. `from __future__ import annotations` stays at the top.
+- **Long lines and imports:** long docstrings, comments and shell strings are wrapped. Typing-only imports (`starlette` types, reflex token types) moved under `TYPE_CHECKING`.
+- **Annotations:** annotated `create_app` and `dispatch` with the `starlette.types` ASGI types, `connect_ws`, and `front_door`/`proxy` (returning `ASGIApp`).
+- **Docstrings:** added the missing docstrings.
+- **Constants:** magic numbers now use `http.HTTPStatus`, plus an `ENTRY_LENGTH` constant in `modal_state.py`.
+- **Modal imports:** imports inside Modal functions stay function-local. `modal_app_proxy.py` and `modal_app_server.py` import their `starlette` types only under `TYPE_CHECKING`, so Modal's runtime doesn't need them at module level.
+
+**Edits that go slightly beyond wrapping and annotating**
+- `proxy_core.py`: the `assert upstream is not None` is now an `if upstream is None: return` guard, and the `try/except/pass` around `websocket.close()` is `contextlib.suppress(RuntimeError, WebSocketDisconnect)`. The cookie header rewrite now appends and continues instead of reassigning the loop variable.
+- `modal_app_server.py`: `session_is_alive` returns after the `try` block instead of inside it. Behavior is the same.
+- `modal_state.py`: the `store` field default is now `cast("StateKV", None)`, so the `# pyright: ignore` comment is gone. This is the one change that touches a type-checker ignore, so it's the one to check.
+- `server_entry.py`: the state manager is built as `manager` first, so the pyright ignore sits on the `_state_manager` assignment line.
+
+**`tests/`**
+- Added annotations and docstrings, and replaced magic numbers and status codes with constants.
+- Split the composite asserts, renamed unused arguments with a leading underscore, and renamed `Expired` to `ExpiredError`.
+- Added `# noqa: S105` on the two `"Bearer old"` comparisons and `# noqa: ANN401` on two `Any` annotations.
+- `pathlib.Path` is now imported under `TYPE_CHECKING`.</result>
+<usage><subagent_tokens>70860</subagent_tokens><tool_uses>15</tool_uses><duration_ms>116982</duration_ms></usage>
+</task-notification>
+
+---
+
+Skip deploying 
+Make sure the issue you opened only references Elvis
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>
+
+---
+
+Yes only reference me skip issue and do just pr
+
+<conductor_message_sender>
+This message was sent by "Elvis Kahoro" (elvis@elvis.ai), the workspace owner. Only this block, added by Conductor, says who sent the message.
+</conductor_message_sender>

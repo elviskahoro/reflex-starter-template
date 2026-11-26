@@ -35,6 +35,9 @@ exclude = [
   ".venv/**",
   ".web/**",
   "ci/**",
+  # Modal deploy scripts are standalone (run in Modal's cloud, not part of the
+  # web.* layers); ruff and pytest cover them. See deploy/modal/README.md.
+  "deploy/**",
   "**/__pycache__/**",
   "symlink/**",
 ]
@@ -60,7 +63,19 @@ file_dependencies = [
 # aligned with what pyproject.toml actually declares (production deps
 # only) rather than forcing pytest into `[project].dependencies`.
 [external]
-exclude = ["pytest", "hypothesis"]
+exclude = [
+  "pytest",
+  "hypothesis",
+  # tests/ exercises deploy/modal (put on sys.path by pytest's `pythonpath`), which
+  # is excluded from tach above. The proxy tests also use httpx, starlette and
+  # websockets, which arrive transitively with reflex.
+  "modal_state",
+  "proxy_core",
+  "frontend_files",
+  "httpx",
+  "starlette",
+  "websockets",
+]
 
 # Default-deny new packages instead of folding their imports into a parent module.
 # Single-level globs keep each page's implementation inside its package boundary.

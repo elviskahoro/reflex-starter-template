@@ -26,6 +26,8 @@ dev = [
 # `testpaths` limits pytest collection to tests/ so it does not pick up
 # scripts or fixtures that happen to live elsewhere later.
 testpaths = ["tests"]
+# deploy/modal holds Modal scripts that tests import by bare module name.
+pythonpath = ["deploy/modal"]
 markers = ["network: hits the public internet; deselected by default"]
 addopts = "-m 'not network'"
 

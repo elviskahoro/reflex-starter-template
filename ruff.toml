@@ -31,6 +31,21 @@ ignore = [
 # the intent without per-method docstrings (D102/D103).
 "tests/**" = ["D102", "D103", "S101"]
 
+# Modal deploy scripts run in Modal's cloud, outside the app package: they are
+# plain scripts (no package), import lazily inside Modal functions so the image
+# is not needed locally, and shell out to binaries on the image's PATH. Granian
+# must bind all interfaces inside the container.
+"deploy/modal/**" = [
+  "INP001",  # scripts, not a package
+  "PLC0415", # lazy imports inside Modal functions
+  "S104",    # container binds 0.0.0.0
+  "S607",    # binaries resolved on the image PATH
+  "T201",    # timing logs go to the container log
+  "SLF001",  # reflex has no public state-manager hook (see server_entry.py)
+  "C901",    # proxy relay is one coherent state machine
+  "PLR0915",
+]
+
 [lint.isort]
 case-sensitive = true
 combine-as-imports = true

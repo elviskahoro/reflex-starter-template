@@ -98,6 +98,11 @@ uv run python scripts/check_frontend.py  # JS deps vs reflex.lock (needs bun; ~1
 trunk check --all            # lint (run uv sync first: pyright/pyrefly use .venv)
 ```
 
+## Deploying
+
+Railway: `DEPLOYMENT.md`. Modal (two variants, with a decision guide and sandbox
+notes): `deploy/modal/README.md`. Read it before choosing or deploying a variant.
+
 ## Conventions
 
 - Layers are `web.web` -> `web.pages.*` -> `web.components.*`, enforced by

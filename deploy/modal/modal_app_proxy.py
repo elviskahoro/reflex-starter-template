@@ -105,7 +105,9 @@ image = (
     .add_local_file(str(HERE / "server_entry.py"), "/app/server_entry.py", copy=True)
     .add_local_file(str(HERE / "modal_state.py"), "/app/modal_state.py", copy=True)
     .add_local_file(
-        str(HERE / "frontend_files.py"), "/app/frontend_files.py", copy=True,
+        str(HERE / "frontend_files.py"),
+        "/app/frontend_files.py",
+        copy=True,
     )
     .env(
         {

@@ -206,7 +206,9 @@ class StateManagerModalDict(StateManagerDisk):
 
     @override
     async def set_state_for_substate(
-        self, token: StateToken[TOKEN_TYPE], substate: TOKEN_TYPE,
+        self,
+        token: StateToken[TOKEN_TYPE],
+        substate: TOKEN_TYPE,
     ) -> None:
         """Save a changed (touched) substate, then recurse into its substates."""
         if token.get_and_reset_touched_state(substate):
@@ -216,7 +218,9 @@ class StateManagerModalDict(StateManagerDisk):
                 await self.store.put(key, (time.time(), data))
                 if self.debug:
                     logger.warning(
-                        "modal_state save key=%s bytes=%d", key[-8:], len(data),
+                        "modal_state save key=%s bytes=%d",
+                        key[-8:],
+                        len(data),
                     )
 
         if isinstance(substate, BaseState):

@@ -22,7 +22,9 @@ def _site(root: Path) -> None:
 
 
 async def _get(
-    app: FrontendFiles, path: str, headers: list[tuple[bytes, bytes]] | None = None,
+    app: FrontendFiles,
+    path: str,
+    headers: list[tuple[bytes, bytes]] | None = None,
 ) -> tuple[int, dict[str, str], bytes]:
     sent: list[dict] = []
     scope = {

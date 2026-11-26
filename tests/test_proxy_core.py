@@ -16,7 +16,9 @@ if TYPE_CHECKING:
 
 
 def _resp(
-    status: int, body: bytes | str = b"", headers: dict[str, str] | None = None,
+    status: int,
+    body: bytes | str = b"",
+    headers: dict[str, str] | None = None,
 ) -> httpx.Response:
     """A response that streams its body, like one from the network."""
     data = body.encode() if isinstance(body, str) else body
@@ -46,7 +48,8 @@ def _client(
     sessions = sessions or FakeSessions()
     upstream = httpx.AsyncClient(transport=httpx.MockTransport(handler))
     return TestClient(
-        make_app(sessions, client=upstream, **kwargs), base_url="https://proxy.test",
+        make_app(sessions, client=upstream, **kwargs),
+        base_url="https://proxy.test",
     ), sessions
 
 
@@ -187,7 +190,9 @@ def test_websocket_is_relayed_with_the_session_token() -> None:
     opened: list[tuple[str, list[tuple[str, str]]]] = []
 
     async def connect(
-        url: str, additional_headers: list[tuple[str, str]], **_: object,
+        url: str,
+        additional_headers: list[tuple[str, str]],
+        **_: object,
     ) -> FakeUpstreamSocket:
         opened.append((url, additional_headers))
         return FakeUpstreamSocket()
@@ -211,7 +216,9 @@ def test_websocket_retries_once_when_the_session_has_expired() -> None:
     attempts: list[str] = []
 
     async def connect(
-        _url: str, additional_headers: list[tuple[str, str]], **_: object,
+        _url: str,
+        additional_headers: list[tuple[str, str]],
+        **_: object,
     ) -> FakeUpstreamSocket:
         auth = dict(additional_headers)["Modal-Authorization"]
         attempts.append(auth)
@@ -221,7 +228,8 @@ def test_websocket_retries_once_when_the_session_has_expired() -> None:
 
     sessions = FakeSessions()
     client = TestClient(
-        make_app(sessions, connect_ws=connect), base_url="https://proxy.test",
+        make_app(sessions, connect_ws=connect),
+        base_url="https://proxy.test",
     )
     client.cookies.set(COOKIE, "old")
     with client.websocket_connect("/_event/") as ws:
@@ -246,7 +254,8 @@ def test_websocket_subprotocol_is_negotiated_through_the_proxy() -> None:
     app = make_app(FakeSessions(), connect_ws=connect)
     client = TestClient(app, base_url="https://proxy.test")
     with client.websocket_connect(
-        "/_event/", subprotocols=["reflex-v1", "other"],
+        "/_event/",
+        subprotocols=["reflex-v1", "other"],
     ) as ws:
         assert ws.accepted_subprotocol == "reflex-v1"
         ws.send_text("hi")

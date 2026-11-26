@@ -63,7 +63,9 @@ class FrontendFiles(PrecompressedStaticFiles):
 
     @override
     def is_not_modified(
-        self, response_headers: Headers, request_headers: Headers,
+        self,
+        response_headers: Headers,
+        request_headers: Headers,
     ) -> bool:
         """Never revalidate HTML: its ETag does not change when the build does."""
         if response_headers.get("content-type", "").startswith("text/html"):

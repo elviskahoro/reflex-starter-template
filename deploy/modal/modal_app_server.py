@@ -88,7 +88,9 @@ image = (
     .add_local_file(str(HERE / "server_entry.py"), "/app/server_entry.py", copy=True)
     .add_local_file(str(HERE / "modal_state.py"), "/app/modal_state.py", copy=True)
     .add_local_file(
-        str(HERE / "frontend_files.py"), "/app/frontend_files.py", copy=True,
+        str(HERE / "frontend_files.py"),
+        "/app/frontend_files.py",
+        copy=True,
     )
     .env(
         {
@@ -141,7 +143,8 @@ class ReflexServer:
 
 
 door_image = modal.Image.debian_slim(python_version="3.12").pip_install(
-    "starlette", "httpx",
+    "starlette",
+    "httpx",
 )
 
 
@@ -183,7 +186,8 @@ def front_door() -> ASGIApp:
             creds = await server.sessions.start.aio(idle_timeout=SESSION_IDLE_SECONDS)
             token = creds.token
         response = RedirectResponse(
-            f"{url}{request.url.path}?modal_session_token={token}", status_code=307,
+            f"{url}{request.url.path}?modal_session_token={token}",
+            status_code=307,
         )
         response.set_cookie(
             SESSION_COOKIE,

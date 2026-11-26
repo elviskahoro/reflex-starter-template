@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.12.1",
+  "checkpoint_id": "01M8AM6SQ61EGNKMS4HS0YVV7N",
+  "session_id": "14f8afe0-6776-4fe1-892a-ad1c4c25b3dc",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-26T00:31:11.30956661Z",
+  "branch": "conductor/msg-616-modal-deploy",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "deploy/modal/frontend_files.py",
+    "deploy/modal/modal_app_proxy.py",
+    "deploy/modal/modal_app_server.py",
+    "deploy/modal/modal_state.py",
+    "deploy/modal/proxy_core.py",
+    "tests/test_frontend_files.py",
+    "tests/test_proxy_core.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "baa35b5f14eb",
+  "checkpoint_transcript_start": 122,
+  "transcript_lines_at_start": 122,
+  "compact_transcript_start": 18,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 2749,
+    "cache_read_tokens": 279113,
+    "output_tokens": 1373,
+    "api_call_count": 7
+  },
+  "redaction": {
+    "replacements": 15,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 12,
+      "credentialed_uri": 0,
+      "entropy": 0,
+      "key_context": 3,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 3
+  }
+}

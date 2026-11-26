@@ -169,8 +169,8 @@ class StateManagerModalDict(StateManagerDisk):
     @staticmethod
     def _key(token: StateToken[Any]) -> str:
         """Return ``reflex-state/<client hash>/<state hash>``, as Reflex names files."""
-        client = md5(token.ident.encode()).hexdigest()  # noqa: S324
-        state = md5(str(token).encode()).hexdigest()  # noqa: S324
+        client = md5(token.ident.encode(), usedforsecurity=False).hexdigest()
+        state = md5(str(token).encode(), usedforsecurity=False).hexdigest()
         return f"{PREFIX}{client}/{state}"
 
     @override
@@ -206,7 +206,7 @@ class StateManagerModalDict(StateManagerDisk):
 
     @override
     async def set_state_for_substate(
-        self, token: StateToken[TOKEN_TYPE], substate: TOKEN_TYPE
+        self, token: StateToken[TOKEN_TYPE], substate: TOKEN_TYPE,
     ) -> None:
         """Save a changed (touched) substate, then recurse into its substates."""
         if token.get_and_reset_touched_state(substate):
@@ -216,7 +216,7 @@ class StateManagerModalDict(StateManagerDisk):
                 await self.store.put(key, (time.time(), data))
                 if self.debug:
                     logger.warning(
-                        "modal_state save key=%s bytes=%d", key[-8:], len(data)
+                        "modal_state save key=%s bytes=%d", key[-8:], len(data),
                     )
 
         if isinstance(substate, BaseState):

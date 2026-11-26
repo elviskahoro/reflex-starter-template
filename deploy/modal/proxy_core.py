@@ -121,7 +121,7 @@ async def _read_raw(reply: httpx.Response) -> bytes:
 def _set_cookie(response: Response, token: str, max_age: int) -> None:
     """Store the session token in the proxy's own cookie."""
     response.set_cookie(
-        COOKIE, token, max_age=max_age, httponly=True, secure=True, samesite="lax"
+        COOKIE, token, max_age=max_age, httponly=True, secure=True, samesite="lax",
     )
 
 
@@ -162,7 +162,7 @@ def make_app(
                 minted = True
             headers = upstream_headers(list(request.headers.items()), token)
             upstream = http_client().build_request(
-                request.method, url, headers=headers, content=body
+                request.method, url, headers=headers, content=body,
             )
             reply = await http_client().send(upstream, stream=True)
             raw = await _read_raw(reply)
@@ -229,7 +229,7 @@ def make_app(
             _set_cookie(cookie, token, cookie_max_age)
             accept_headers = [(b"set-cookie", cookie.headers["set-cookie"].encode())]
         await websocket.accept(
-            subprotocol=getattr(upstream, "subprotocol", None), headers=accept_headers
+            subprotocol=getattr(upstream, "subprotocol", None), headers=accept_headers,
         )
 
         async def client_to_server() -> None:
@@ -269,5 +269,5 @@ def make_app(
             WebSocketRoute("/{path:path}", relay),
             Route("/{path:path}", forward, methods=ALL_METHODS),
             Route("/", forward, methods=ALL_METHODS),
-        ]
+        ],
     )

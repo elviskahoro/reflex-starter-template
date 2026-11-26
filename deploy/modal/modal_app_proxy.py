@@ -105,7 +105,7 @@ image = (
     .add_local_file(str(HERE / "server_entry.py"), "/app/server_entry.py", copy=True)
     .add_local_file(str(HERE / "modal_state.py"), "/app/modal_state.py", copy=True)
     .add_local_file(
-        str(HERE / "frontend_files.py"), "/app/frontend_files.py", copy=True
+        str(HERE / "frontend_files.py"), "/app/frontend_files.py", copy=True,
     )
     .env(
         {
@@ -115,7 +115,7 @@ image = (
             # Shared with variant 3.
             "REFLEX_STATE_DICT": "reflex-state",
             "REFLEX_STATE_DEBUG": "1",
-        }
+        },
     )
 )
 
@@ -138,7 +138,7 @@ class ReflexServer:
         """Start Granian when the container starts."""
         # One worker on purpose: Reflex keeps per-visitor state in process memory
         # and only supports several workers with Redis.
-        subprocess.Popen(
+        subprocess.Popen(  # nosec B607 - granian is on PATH in the image
             [
                 "granian",
                 "--interface",
@@ -146,7 +146,7 @@ class ReflexServer:
                 "--factory",
                 "server_entry:create_app",
                 "--host",
-                "0.0.0.0",
+                "0.0.0.0",  # nosec B104 - must listen on all interfaces in the container
                 "--port",
                 "8000",
                 "--workers",
@@ -188,7 +188,7 @@ def proxy() -> ASGIApp:
         async def start(self) -> str:
             """Start a new session and return its token."""
             creds = await self._server.sessions.start.aio(
-                idle_timeout=SESSION_IDLE_SECONDS
+                idle_timeout=SESSION_IDLE_SECONDS,
             )
             return creds.token
 

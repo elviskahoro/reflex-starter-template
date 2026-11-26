@@ -22,7 +22,7 @@ def _site(root: Path) -> None:
 
 
 async def _get(
-    app: FrontendFiles, path: str, headers: list[tuple[bytes, bytes]] | None = None
+    app: FrontendFiles, path: str, headers: list[tuple[bytes, bytes]] | None = None,
 ) -> tuple[int, dict[str, str], bytes]:
     sent: list[dict] = []
     scope = {
@@ -78,7 +78,7 @@ def test_html_is_never_not_modified(tmp_path: Path) -> None:
     _, first, _ = asyncio.run(_get(app, "/"))
     assert first["cache-control"] == HTML_CACHE_CONTROL
     status, _, _ = asyncio.run(
-        _get(app, "/", [(b"if-none-match", first["etag"].encode())])
+        _get(app, "/", [(b"if-none-match", first["etag"].encode())]),
     )
     assert status == http.HTTPStatus.OK
 

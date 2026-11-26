@@ -51,7 +51,7 @@ def create_app() -> ASGIApp:
         manager = StateManagerModalDict(
             store=store,
             _write_debounce_seconds=float(
-                os.environ.get("REFLEX_STATE_DEBOUNCE_SECONDS", "0")
+                os.environ.get("REFLEX_STATE_DEBOUNCE_SECONDS", "0"),
             ),
             debug=bool(os.environ.get("REFLEX_STATE_DEBUG")),
         )
@@ -65,7 +65,7 @@ def create_app() -> ASGIApp:
         """Send backend paths to Reflex and everything else to static files."""
         path = scope.get("path", "")
         if scope["type"] in ("lifespan", "websocket") or path.startswith(
-            BACKEND_PREFIXES
+            BACKEND_PREFIXES,
         ):
             await reflex(scope, receive, send)
         else:
